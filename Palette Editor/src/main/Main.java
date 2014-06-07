@@ -5,7 +5,7 @@ import palette.*;
 public class Main {
 	
 	public static void main(String[] args) {
-		PaletteManager paletteManager = new PaletteManager();
+		PaletteEditor paletteManager = new PaletteEditor();
 		paletteManager.initialize(args);
 	}
 	

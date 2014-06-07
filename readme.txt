@@ -1,6 +1,6 @@
-Duke Nukem 3D Palette Editor 1.0
+Duke Nukem 3D Palette Editor 1.0.1
 
-RELEASE DATE: May 27, 2014
+RELEASE DATE: May 28, 2014
 DEVELOPMENT TIME: 4 Days
 DEVELOPER: Kevin Scroggins (nitro glycerine)
 E-MAIL: nitro404@gmail.com
@@ -261,5 +261,13 @@ Palette Class Name: palette.Palette<FILE_TYPE>
 ===========
  CHANGELOG
 ===========
+  Version 1.0.1 (May 28, 2014)
+    + Fixed a minor bug in the DAT plugin with sub-palettes having the wrong
+      descriptions.
+    + Changed the default config file to "Palette Editor.ini" to prevent
+      conflicts with "DUKE3D.CFG" if running the game from the same directory
+      as the palette editor.
+    + Re-factored a couple class names for clarity.
+
   Version 1.0 (May 27, 2014)
     + Initial release!

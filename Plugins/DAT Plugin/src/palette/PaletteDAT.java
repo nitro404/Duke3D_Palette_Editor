@@ -17,7 +17,7 @@ public class PaletteDAT extends Palette {
 	public static final int PALETTE_SIZE_RGB = NUMBER_OF_COLOURS * BPP;
 	public static final int NUMBER_OF_DAT_PALETTES[] = {1, 5};
 	public static final String PALETTE_DAT_DESCRIPTION = "Normal";
-	public static final String LOOKUP_DAT_DESCRIPTION[] = { "Underwater", "Night Vision", "3D Realms Logo", "Title Screen", "Episode 1 Ending Animation" };
+	public static final String LOOKUP_DAT_DESCRIPTION[] = { "Underwater", "Night Vision", "Title Screen", "3D Realms Logo", "Episode 1 Ending Animation" };
 	public static final String FILE_TYPE = "DAT";
 	
 	public PaletteDAT() {

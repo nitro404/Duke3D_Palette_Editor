@@ -40,7 +40,7 @@ public class PalettePanel extends JPanel implements Scrollable, ActionListener, 
 		setLayout(null);
 		setBackground(SettingsManager.defaultBackgroundColour);
 		
-		m_paletteNumber = PaletteManager.getPaletteNumber();
+		m_paletteNumber = PaletteEditor.getPaletteNumber();
 		m_dimensions = new Dimension(Palette.PALETTE_WIDTH * PixelButton.BUTTON_SIZE, Palette.PALETTE_HEIGHT * PixelButton.BUTTON_SIZE);
 		m_paletteChangeListeners = new Vector<PaletteChangeListener>();
 		m_changed = false;
@@ -256,7 +256,7 @@ public class PalettePanel extends JPanel implements Scrollable, ActionListener, 
 	public void update() {
 		if(!m_initialized) { return; }
 		
-		setBackground(PaletteManager.settings.backgroundColour);
+		setBackground(PaletteEditor.settings.backgroundColour);
 		
 		repaint();
 		revalidate();
@@ -265,13 +265,13 @@ public class PalettePanel extends JPanel implements Scrollable, ActionListener, 
 	public void updateLayout() {
 		if(!m_initialized) { return; }
 		
-		setBackground(PaletteManager.settings.backgroundColour);
+		setBackground(PaletteEditor.settings.backgroundColour);
 		
 		Component parent = getParent();
 		int parentWidth = parent == null ? 0 : parent.getWidth();
 		int parentHeight = parent == null ? 0 : parent.getHeight();
-		int buttonSize = PaletteManager.settings.pixelButtonSize;
-		int paletteSpacing = PaletteManager.settings.paletteSpacing;
+		int buttonSize = PaletteEditor.settings.pixelButtonSize;
+		int paletteSpacing = PaletteEditor.settings.paletteSpacing;
 		int paletteWidth = Palette.PALETTE_WIDTH * buttonSize;
 		int paletteHeight = Palette.PALETTE_HEIGHT * buttonSize;
 		int numberOfHorizontalPalettes = 1 + (parent == null ? 1 : (int) (Math.floor((float) (parentWidth - paletteWidth) / (float) (paletteWidth + paletteSpacing))));
@@ -321,19 +321,19 @@ public class PalettePanel extends JPanel implements Scrollable, ActionListener, 
 			}
 		}
 		else if(e.getSource() == m_savePopupMenuItem) {
-			PaletteManager.paletteEditorWindow.saveSelectedPalette();
+			PaletteEditor.paletteEditorWindow.saveSelectedPalette();
 		}
 		else if(e.getSource() == m_saveAsPopupMenuItem) {
-			PaletteManager.paletteEditorWindow.saveSelectedPaletteAsNew();
+			PaletteEditor.paletteEditorWindow.saveSelectedPaletteAsNew();
 		}
 		else if(e.getSource() == m_importPopupMenuItem) {
-			PaletteManager.paletteEditorWindow.importPalette();
+			PaletteEditor.paletteEditorWindow.importPalette();
 		}
 		else if(e.getSource() == m_exportPopupMenuItem) {
-			PaletteManager.paletteEditorWindow.exportPalette();
+			PaletteEditor.paletteEditorWindow.exportPalette();
 		}
 		else if(e.getSource() == m_closePopupMenuItem) {
-			PaletteManager.paletteEditorWindow.closeSelectedPalette();
+			PaletteEditor.paletteEditorWindow.closeSelectedPalette();
 		}
 	}
 	

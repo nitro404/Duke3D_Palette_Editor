@@ -28,7 +28,7 @@ public class SettingsManager {
 	public int maxConsoleHistory;
 	public Color backgroundColour;
 	
-	public static final String defaultSettingsFileName = "Palette Editor.cfg";
+	public static final String defaultSettingsFileName = "Palette Editor.ini";
 	public static final String defaultVersionFileURL = "http://www.nitro404.com/version/duke3d_palette_editor.xml";
 	public static final boolean defaultAutoSaveSettings = true;
 	public static final boolean defaultAutoLoadPlugins = true;

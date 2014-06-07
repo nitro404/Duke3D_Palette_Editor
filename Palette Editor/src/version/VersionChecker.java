@@ -36,22 +36,22 @@ public class VersionChecker {
 	}
 	
 	private static boolean checkVersionHelper(boolean verbose) {
-		if(PaletteManager.settings.versionFileURL == null) {
-			PaletteManager.console.writeLine("Version file URL not set, maybe reset your settings?");
+		if(PaletteEditor.settings.versionFileURL == null) {
+			PaletteEditor.console.writeLine("Version file URL not set, maybe reset your settings?");
 			
-			if(verbose) { JOptionPane.showMessageDialog(PaletteManager.paletteEditorWindow.getFrame(), "Version file URL not set, maybe reset your settings?", "Invalid Version File URL", JOptionPane.ERROR_MESSAGE); }
+			if(verbose) { JOptionPane.showMessageDialog(PaletteEditor.paletteEditorWindow.getFrame(), "Version file URL not set, maybe reset your settings?", "Invalid Version File URL", JOptionPane.ERROR_MESSAGE); }
 			
 			return false;
 		}
 		
 		URL url;
 		try {
-			url = new URL(PaletteManager.settings.versionFileURL);
+			url = new URL(PaletteEditor.settings.versionFileURL);
 		}
 		catch(MalformedURLException e) {
-			PaletteManager.console.writeLine("Version file URL is invalid or malformed, please check that it is correct or reset your settings:" + e.getMessage());
+			PaletteEditor.console.writeLine("Version file URL is invalid or malformed, please check that it is correct or reset your settings:" + e.getMessage());
 			
-			if(verbose) { JOptionPane.showMessageDialog(PaletteManager.paletteEditorWindow.getFrame(), "Version file URL is invalid or malformed, please check that it is correct or reset your settings:" + e.getMessage(), "Invalid URL", JOptionPane.ERROR_MESSAGE); }
+			if(verbose) { JOptionPane.showMessageDialog(PaletteEditor.paletteEditorWindow.getFrame(), "Version file URL is invalid or malformed, please check that it is correct or reset your settings:" + e.getMessage(), "Invalid URL", JOptionPane.ERROR_MESSAGE); }
 			
 			return false;
 		}
@@ -61,9 +61,9 @@ public class VersionChecker {
 			in = url.openStream();
 		}
 		catch(IOException e) {
-			PaletteManager.console.writeLine("Failed to open stream to version file, perhaps the url is wrong or the file is missing?");
+			PaletteEditor.console.writeLine("Failed to open stream to version file, perhaps the url is wrong or the file is missing?");
 			
-			if(verbose) { JOptionPane.showMessageDialog(PaletteManager.paletteEditorWindow.getFrame(), "Failed to open stream to version file, perhaps the url is wrong or the file is missing?", "IO Exception", JOptionPane.ERROR_MESSAGE); }
+			if(verbose) { JOptionPane.showMessageDialog(PaletteEditor.paletteEditorWindow.getFrame(), "Failed to open stream to version file, perhaps the url is wrong or the file is missing?", "IO Exception", JOptionPane.ERROR_MESSAGE); }
 			
 			return false;
 		}
@@ -89,7 +89,7 @@ public class VersionChecker {
 						temp = element.getAttributeByName(new QName(NAME));
 						if(temp != null) { name = temp.getValue().trim(); }
 						if(!name.equalsIgnoreCase("Duke Nukem 3D Palette Editor")) {
-							PaletteManager.console.writeLine("Program name in version file does not match name of program: \"" + name + "\".");
+							PaletteEditor.console.writeLine("Program name in version file does not match name of program: \"" + name + "\".");
 						}
 						
 						temp = element.getAttributeByName(new QName(VERSION));
@@ -107,46 +107,46 @@ public class VersionChecker {
 			in.close();
 		}
 		catch(XMLStreamException e) {
-			PaletteManager.console.writeLine("XML stream exception thrown while attempting to read version file stream: " + e.getMessage());
+			PaletteEditor.console.writeLine("XML stream exception thrown while attempting to read version file stream: " + e.getMessage());
 			
-			if(verbose) { JOptionPane.showMessageDialog(PaletteManager.paletteEditorWindow.getFrame(), "XML stream exception thrown while attempting to read version file stream: " + e.getMessage(), "XML Stream Exception", JOptionPane.ERROR_MESSAGE); }
+			if(verbose) { JOptionPane.showMessageDialog(PaletteEditor.paletteEditorWindow.getFrame(), "XML stream exception thrown while attempting to read version file stream: " + e.getMessage(), "XML Stream Exception", JOptionPane.ERROR_MESSAGE); }
 			
 			return false;
 		}
 		catch(IOException e) {
-			PaletteManager.console.writeLine("Read exception thrown while parsing version file.");
+			PaletteEditor.console.writeLine("Read exception thrown while parsing version file.");
 			
-			if(verbose) { JOptionPane.showMessageDialog(PaletteManager.paletteEditorWindow.getFrame(), "Read exception thrown while parsing version file.", "IO Exception", JOptionPane.ERROR_MESSAGE); }
+			if(verbose) { JOptionPane.showMessageDialog(PaletteEditor.paletteEditorWindow.getFrame(), "Read exception thrown while parsing version file.", "IO Exception", JOptionPane.ERROR_MESSAGE); }
 			
 			return false;
 		}
 		
 		try {
-			switch(Utilities.compareVersions(PaletteManager.VERSION, version)) {
+			switch(Utilities.compareVersions(PaletteEditor.VERSION, version)) {
 				case -1:
-					PaletteManager.console.writeLine("A new version of Duke Nukem 3D Palette Editor is available! Download version " + version + " at the following link: \"" + link + "\".");
+					PaletteEditor.console.writeLine("A new version of Duke Nukem 3D Palette Editor is available! Download version " + version + " at the following link: \"" + link + "\".");
 					
-					if(verbose || !PaletteManager.settings.supressUpdates) { JOptionPane.showMessageDialog(PaletteManager.paletteEditorWindow.getFrame(), "A new version of Duke Nukem 3D Palette Editor is available! Released " + date + ".\nDownload version " + version + " at the following link: \"" + link + "\".", "New Version Available", JOptionPane.INFORMATION_MESSAGE); }
+					if(verbose || !PaletteEditor.settings.supressUpdates) { JOptionPane.showMessageDialog(PaletteEditor.paletteEditorWindow.getFrame(), "A new version of Duke Nukem 3D Palette Editor is available! Released " + date + ".\nDownload version " + version + " at the following link: \"" + link + "\".", "New Version Available", JOptionPane.INFORMATION_MESSAGE); }
 					
 					break;
 				case 0:
-					PaletteManager.console.writeLine("Duke Nukem 3D Palette Editor is up to date with version " + PaletteManager.VERSION + ", released " + date + ".");
+					PaletteEditor.console.writeLine("Duke Nukem 3D Palette Editor is up to date with version " + PaletteEditor.VERSION + ", released " + date + ".");
 					
-					if(verbose) { JOptionPane.showMessageDialog(PaletteManager.paletteEditorWindow.getFrame(), "Duke Nukem 3D Palette Editor is up to date with version " + PaletteManager.VERSION + ", released " + date + ".", "Up to Date", JOptionPane.INFORMATION_MESSAGE); }
+					if(verbose) { JOptionPane.showMessageDialog(PaletteEditor.paletteEditorWindow.getFrame(), "Duke Nukem 3D Palette Editor is up to date with version " + PaletteEditor.VERSION + ", released " + date + ".", "Up to Date", JOptionPane.INFORMATION_MESSAGE); }
 					
 					break;
 				case 1:
-					PaletteManager.console.writeLine("Wow, you're from the future? Awesome. Hope you're enjoying your spiffy version " + PaletteManager.VERSION + " of the Duke Nukem 3D Palette Editor!");
+					PaletteEditor.console.writeLine("Wow, you're from the future? Awesome. Hope you're enjoying your spiffy version " + PaletteEditor.VERSION + " of the Duke Nukem 3D Palette Editor!");
 					
-					JOptionPane.showMessageDialog(PaletteManager.paletteEditorWindow.getFrame(), "Wow, you're from the future? Awesome.\nHope you're enjoying your spiffy version " + PaletteManager.VERSION + " of the Duke Nukem 3D Palette Editor!", "Hello Time Traveller!", JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(PaletteEditor.paletteEditorWindow.getFrame(), "Wow, you're from the future? Awesome.\nHope you're enjoying your spiffy version " + PaletteEditor.VERSION + " of the Duke Nukem 3D Palette Editor!", "Hello Time Traveller!", JOptionPane.INFORMATION_MESSAGE);
 					
 					break;
 			}
 		}
 		catch(NumberFormatException e) {
-			PaletteManager.console.writeLine("Version check failed: Illegal non-numerical value encountered while parsing version.");
+			PaletteEditor.console.writeLine("Version check failed: Illegal non-numerical value encountered while parsing version.");
 			
-			if(verbose) { JOptionPane.showMessageDialog(PaletteManager.paletteEditorWindow.getFrame(), "Version check failed: Illegal non-numerical value encountered while parsing version.", "Invalid Version", JOptionPane.ERROR_MESSAGE); }
+			if(verbose) { JOptionPane.showMessageDialog(PaletteEditor.paletteEditorWindow.getFrame(), "Version check failed: Illegal non-numerical value encountered while parsing version.", "Invalid Version", JOptionPane.ERROR_MESSAGE); }
 			
 			return false;
 		}

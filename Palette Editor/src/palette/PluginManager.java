@@ -279,7 +279,7 @@ public class PluginManager {
 					}
 				}
 				catch(PalettePluginLoadException e) {
-					PaletteManager.console.writeLine(e.getMessage());
+					PaletteEditor.console.writeLine(e.getMessage());
 					
 					return 0;
 				}
@@ -315,7 +315,7 @@ public class PluginManager {
 				String name = null;
 				try { name = PalettePlugin.getPalettePluginName(file); }
 				catch(PalettePluginLoadException e) {
-					PaletteManager.console.writeLine(e.getMessage());
+					PaletteEditor.console.writeLine(e.getMessage());
 				}
 				
 				if(name != null) {
@@ -373,9 +373,9 @@ public class PluginManager {
 			newPalettePlugin = PalettePlugin.loadFrom(file);
 		}
 		catch(PalettePluginLoadException e) {
-			PaletteManager.console.writeLine(e.getMessage());
+			PaletteEditor.console.writeLine(e.getMessage());
 			
-			JOptionPane.showMessageDialog(PaletteManager.paletteEditorWindow.getFrame(), e.getMessage(), "Plugin Load Failed", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(PaletteEditor.paletteEditorWindow.getFrame(), e.getMessage(), "Plugin Load Failed", JOptionPane.ERROR_MESSAGE);
 			
 			if(task != null) {
 				task.cancel();
@@ -401,9 +401,9 @@ public class PluginManager {
 			if(newPalettePlugin.hasSharedSupportedPaletteFileType(m_plugins.elementAt(i))) {
 				String sharedSupportedPaletteFileTypes = newPalettePlugin.getSharedSupportedPaletteFileTypesAsString(m_plugins.elementAt(i));
 				
-				PaletteManager.console.writeLine("Attempted to load \"" + newPalettePlugin.getName() + "\" plugin for where \"" + sharedSupportedPaletteFileTypes + "\" palette file type(s) were already supported in \"" + m_plugins.elementAt(i).getName() + "\" plugin.");
+				PaletteEditor.console.writeLine("Attempted to load \"" + newPalettePlugin.getName() + "\" plugin for where \"" + sharedSupportedPaletteFileTypes + "\" palette file type(s) were already supported in \"" + m_plugins.elementAt(i).getName() + "\" plugin.");
 				
-				JOptionPane.showMessageDialog(PaletteManager.paletteEditorWindow.getFrame(), "Attempted to load \"" + newPalettePlugin.getName() + "\" plugin where \"" + sharedSupportedPaletteFileTypes + "\" palette file type(s) were already supported in \"" + m_plugins.elementAt(i).getName() + "\" plugin.", "File Type(s) Already Supported", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(PaletteEditor.paletteEditorWindow.getFrame(), "Attempted to load \"" + newPalettePlugin.getName() + "\" plugin where \"" + sharedSupportedPaletteFileTypes + "\" palette file type(s) were already supported in \"" + m_plugins.elementAt(i).getName() + "\" plugin.", "File Type(s) Already Supported", JOptionPane.ERROR_MESSAGE);
 				
 				if(task != null) {
 					task.cancel();

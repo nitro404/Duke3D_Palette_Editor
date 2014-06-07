@@ -102,11 +102,11 @@ public class SystemConsole {
     private void writeLine(String text, boolean ignoreLog) {
     	SystemConsoleEntry newConsoleEntry = new SystemConsoleEntry(text);
 		m_consoleEntries.add(newConsoleEntry);
-		while(m_consoleEntries.size() > PaletteManager.settings.maxConsoleHistory) {
+		while(m_consoleEntries.size() > PaletteEditor.settings.maxConsoleHistory) {
 			m_consoleEntries.remove(0);
 		}
 		
-		if(PaletteManager.settings.logConsole && !ignoreLog) {
+		if(PaletteEditor.settings.logConsole && !ignoreLog) {
 			addHeaderToLogFile();
 			if(!appendToLogFile(newConsoleEntry.getTimeAsString() + ": " + newConsoleEntry.getText())) {
 				writeLine("Failed to write text to console log file", true);
@@ -124,16 +124,16 @@ public class SystemConsole {
     }
     
     public boolean createLogDirectory() {
-		if(PaletteManager.settings.logDirectoryName.length() == 0) { return true; }
+		if(PaletteEditor.settings.logDirectoryName.length() == 0) { return true; }
 		
-		File logDirectory = new File(PaletteManager.settings.logDirectoryName);
+		File logDirectory = new File(PaletteEditor.settings.logDirectoryName);
 		
 		if(!logDirectory.exists()) {
 			try {
 				return logDirectory.mkdirs();
 			}
 			catch(SecurityException e) {
-				PaletteManager.console.writeLine("Failed to create log directory, check read / write permissions.");
+				PaletteEditor.console.writeLine("Failed to create log directory, check read / write permissions.");
 				return false;
 			}
 		}
@@ -150,7 +150,7 @@ public class SystemConsole {
 		
 		createLogDirectory();
 		
-		File logFile = new File((PaletteManager.settings.logDirectoryName.length() == 0 ? "" : PaletteManager.settings.logDirectoryName + (PaletteManager.settings.logDirectoryName.charAt(PaletteManager.settings.logDirectoryName.length() - 1) == '/' || PaletteManager.settings.logDirectoryName.charAt(PaletteManager.settings.logDirectoryName.length() - 1) == '\\' ? "" : "/")) + PaletteManager.settings.consoleLogFileName);
+		File logFile = new File((PaletteEditor.settings.logDirectoryName.length() == 0 ? "" : PaletteEditor.settings.logDirectoryName + (PaletteEditor.settings.logDirectoryName.charAt(PaletteEditor.settings.logDirectoryName.length() - 1) == '/' || PaletteEditor.settings.logDirectoryName.charAt(PaletteEditor.settings.logDirectoryName.length() - 1) == '\\' ? "" : "/")) + PaletteEditor.settings.consoleLogFileName);
 		
 		PrintWriter out = null;
 		
@@ -177,7 +177,7 @@ public class SystemConsole {
 		
 		createLogDirectory();
 		
-		File logFile = new File((PaletteManager.settings.logDirectoryName.length() == 0 ? "" : PaletteManager.settings.logDirectoryName + (PaletteManager.settings.logDirectoryName.charAt(PaletteManager.settings.logDirectoryName.length() - 1) == '/' || PaletteManager.settings.logDirectoryName.charAt(PaletteManager.settings.logDirectoryName.length() - 1) == '\\' ? "" : "/")) + PaletteManager.settings.consoleLogFileName);
+		File logFile = new File((PaletteEditor.settings.logDirectoryName.length() == 0 ? "" : PaletteEditor.settings.logDirectoryName + (PaletteEditor.settings.logDirectoryName.charAt(PaletteEditor.settings.logDirectoryName.length() - 1) == '/' || PaletteEditor.settings.logDirectoryName.charAt(PaletteEditor.settings.logDirectoryName.length() - 1) == '\\' ? "" : "/")) + PaletteEditor.settings.consoleLogFileName);
 		
 		PrintWriter out = null;
 		

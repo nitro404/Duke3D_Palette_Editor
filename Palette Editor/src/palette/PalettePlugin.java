@@ -256,7 +256,7 @@ public class PalettePlugin {
 		Class<?> c;
 		
 		try {
-			jarFile = new JarFile(Utilities.appendSlash(PaletteManager.settings.pluginDirectoryName) + Utilities.appendSlash(m_directoryName) + "/" + m_jarFileName);
+			jarFile = new JarFile(Utilities.appendSlash(PaletteEditor.settings.pluginDirectoryName) + Utilities.appendSlash(m_directoryName) + "/" + m_jarFileName);
 			
 			Pattern p = Pattern.compile(".*\\.class$", Pattern.CASE_INSENSITIVE);
 			
@@ -274,7 +274,7 @@ public class PalettePlugin {
 					
 					name = e.getName().replaceAll("[\\\\/]", ".").replaceAll("\\.[Cc][Ll][Aa][Ss][Ss]$", "");
 					
-					c = PaletteManager.classLoader.deserializeClass(name, data);
+					c = PaletteEditor.classLoader.deserializeClass(name, data);
 					if(c == null) { return false; }
 					
 					m_classes.put(name, c);
@@ -753,7 +753,7 @@ public class PalettePlugin {
 		}
 		
 		palettePlugin.m_paletteClass = null;
-		try { palettePlugin.m_paletteClass = PaletteManager.classLoader.loadClass(palettePlugin.m_paletteClassName); }
+		try { palettePlugin.m_paletteClass = PaletteEditor.classLoader.loadClass(palettePlugin.m_paletteClassName); }
 		catch(ClassNotFoundException e) { throw new PalettePluginLoadException("Class " + palettePlugin.m_paletteClassName + " is missing or not loaded."); }
 		if(!(Palette.class.isAssignableFrom(palettePlugin.m_paletteClass))) {
 			throw new PalettePluginLoadException("Class " + palettePlugin.m_paletteClassName + " does not extend Palette class.");
