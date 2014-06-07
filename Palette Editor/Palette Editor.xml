@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<project name="Duke Nukem 3D Palette Editor" default="build" basedir=".">
+	
+	<description>
+		Duke Nukem 3D Palette Editor
+	</description>
+	
+	<property name="sourceFolder" value="src" />
+	<property name="outputFolder" value="bin" />
+	<property name="verbose" value="false" />
+	
+	<property name="paletteEditorMainClass" value="main.Main" />
+	<property name="paletteEditorJarName" value="Duke Nukem 3D Palette Editor" />
+	<property name="paletteEditorSourceDirectory" value="${basedir}/${sourceFolder}" />
+	<property name="paletteEditorOutputDirectory" value="${basedir}/${outputFolder}" />
+	
+	<property name="pluginLibraryFolder" value="Plugin Library" />
+	<property name="pluginLibraryDirectory" value="../${pluginLibraryFolder}" />
+	<property name="pluginLibraryJarName" value="Plugin Library" />
+	<property name="library" value="../${pluginLibraryFolder}/${pluginLibraryJarName}.jar" />
+	
+	<property name="pluginSourceFolder" value="Plugins" />
+	<property name="pluginSourceDir" value="../${pluginSourceFolder}" />
+	
+	<target name="clean" description="Clean Output Directory">
+		<delete dir="${paletteEditorOutputDirectory}" />
+	</target>
+	
+	<target name="prepare" depends="clean" description="Create Output Directory">
+		<mkdir dir="${paletteEditorOutputDirectory}" />
+	</target>
+	
+	<target name="compile" depends="prepare" description="Compile All Source Files">
+		<javac srcdir="${paletteEditorSourceDirectory}" destdir="${paletteEditorOutputDirectory}" verbose="${verbose}" includeantruntime="false" />
+	</target>
+	
+	<target name="package" description="Package Palette Editor Jar">
+		<jar jarfile="${basedir}/${paletteEditorJarName}.jar" basedir="${paletteEditorOutputDirectory}">
+			<manifest>
+                <attribute name="Main-Class" value="${paletteEditorMainClass}"/>
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="build" depends="compile,package" description="Compile and Package Palette Editor" />
+	
+</project>
