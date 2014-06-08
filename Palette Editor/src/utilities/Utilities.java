@@ -174,20 +174,27 @@ public class Utilities {
 			if(index >= v1parts.length) {
 				if(v1parts.length == v2parts.length) { return 0; }
 				
-				b = Integer.parseInt(v2parts[index]);
-				
-				if(b == 0) { return 0; }
-				
-				return -1;
+				for(int i=index;i<v2parts.length;i++) {
+					b = Integer.parseInt(v2parts[i]);
+					
+					if(b != 0) {
+						return -1;
+					}
+				}
+				return 0;
 			}
+			
 			if(index >= v2parts.length) {
 				if(v2parts.length == v1parts.length) { return 0; }
 				
-				a = Integer.parseInt(v1parts[index]);
-				
-				if(a == 0) { return 0; }
-				
-				return 1;
+				for(int i=index;i<v1parts.length;i++) {
+					a = Integer.parseInt(v1parts[i]);
+					
+					if(a != 0) {
+						return 1;
+					}
+				}
+				return 0;
 			}
 			
 			a = Integer.parseInt(v1parts[index]);
