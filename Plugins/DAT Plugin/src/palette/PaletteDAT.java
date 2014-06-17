@@ -217,7 +217,7 @@ public class PaletteDAT extends Palette {
 		// iterate over all local palette data for all sub-palettes and
 		// replace it with the corresponding colour value
 		int offset = 0;
-		for(int p=(index < 0 ? 0 : index);p<(index < 0 ? index + 1 : numberOfPalettes());p++) {
+		for(int p=(index < 0 ? 0 : index);p<(index < 0 ? numberOfPalettes() : index + 1);p++) {
 			for(int j=0;j<PALETTE_HEIGHT;j++) {
 				for(int i=0;i<PALETTE_WIDTH;i++) {
 					// calculate the offset in the palette data array
