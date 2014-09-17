@@ -1,0 +1,13 @@
+**/bin/*
+**/test/*
+**/misc/
+**/Logs/*
+**/Release/*
+Palette Editor.ini
+Palette Editor.cfg
+Plugins/ACT Plugin/ACT.jar
+Plugins/DAT Plugin/DAT.jar
+Plugins/Image Plugin/Image.jar
+Plugins/PAL Plugin/PAL.jar
+Plugin Library/Plugin Library.jar
+Palette Editor/Duke Nukem 3D Palette Editor*.jar

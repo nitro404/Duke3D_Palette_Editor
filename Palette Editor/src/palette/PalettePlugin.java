@@ -267,6 +267,7 @@ public class PalettePlugin {
 					in = jarFile.getInputStream(e);
 					if(in.available() < 1) {
 						jarFile.close();
+						
 						return false;
 					}
 					data = new byte[in.available()];
@@ -275,7 +276,11 @@ public class PalettePlugin {
 					name = e.getName().replaceAll("[\\\\/]", ".").replaceAll("\\.[Cc][Ll][Aa][Ss][Ss]$", "");
 					
 					c = PaletteEditor.classLoader.deserializeClass(name, data);
-					if(c == null) { return false; }
+					if(c == null) {
+						jarFile.close();
+						
+						return false;
+					}
 					
 					m_classes.put(name, c);
 				}
