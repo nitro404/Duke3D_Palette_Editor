@@ -288,15 +288,15 @@ public class PluginManager {
 		}
 	}
 	
-	public VariableSystem getUnloadedPlugins(File file) {
-		VariableSystem plugins = new VariableSystem();
+	public VariableCollection getUnloadedPlugins(File file) {
+		VariableCollection plugins = new VariableCollection();
 		
 		getUnloadedPlugins(file, 0, plugins);
 		
 		return plugins;
 	}
 	
-	private void getUnloadedPlugins(File file, int depth, VariableSystem plugins) {
+	private void getUnloadedPlugins(File file, int depth, VariableCollection plugins) {
 		if(file == null || !file.exists() || depth > 2 || plugins == null) { return; }
 		
 		if(file.isDirectory()) {
@@ -319,7 +319,7 @@ public class PluginManager {
 				}
 				
 				if(name != null) {
-					plugins.add(name, file.getPath());
+					plugins.addVariable(name, file.getPath());
 				}
 			}
 		}

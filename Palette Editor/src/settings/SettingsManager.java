@@ -7,7 +7,7 @@ import gui.*;
 
 public class SettingsManager {
 	
-	private VariableSystem m_settings;
+	private VariableCollection m_settings;
 	
 	public String settingsFileName = defaultSettingsFileName;
 	public String versionFileURL = defaultVersionFileURL;
@@ -48,7 +48,7 @@ public class SettingsManager {
 	public static final Color defaultBackgroundColour = new Color(238, 238, 238);
 	
 	public SettingsManager() {
-		m_settings = new VariableSystem();
+		m_settings = new VariableCollection();
 		reset();
 	}
 	
@@ -77,7 +77,7 @@ public class SettingsManager {
 	public boolean save() { return saveTo(settingsFileName); }
 	
 	public boolean loadFrom(String fileName) {
-		VariableSystem variables = VariableSystem.readFrom(fileName);
+		VariableCollection variables = VariableCollection.readFrom(fileName);
 		if(variables == null) { return false; }
 		
 		m_settings = variables;

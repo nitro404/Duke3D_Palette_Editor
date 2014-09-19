@@ -128,16 +128,16 @@ public class PaletteEditor implements PaletteChangeListener {
 	}
 	
 	public boolean loadPluginPrompt() {
-		VariableSystem plugins = pluginManager.getUnloadedPlugins(new File(settings.pluginDirectoryName));
+		VariableCollection plugins = pluginManager.getUnloadedPlugins(new File(settings.pluginDirectoryName));
 		
-		if(plugins.size() == 0) {
+		if(plugins.numberOfVariables() == 0) {
 			JOptionPane.showMessageDialog(paletteEditorWindow.getFrame(), "No unloaded plugins found.", "No Unloaded Plugins", JOptionPane.INFORMATION_MESSAGE);
 			return false;
 		}
 		
-		String[] choices = new String[plugins.size()];
-		for(int i=0;i<plugins.size();i++) {
-			choices[i] = plugins.variableAt(i).getID();
+		String[] choices = new String[plugins.numberOfVariables()];
+		for(int i=0;i<plugins.numberOfVariables();i++) {
+			choices[i] = plugins.getVariable(i).getID();
 		}
 		
 		String choice = (String) JOptionPane.showInputDialog(paletteEditorWindow.getFrame(), "Choose a plugin to load:", "Load Plugin", JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]);

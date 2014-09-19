@@ -33,7 +33,7 @@ public class Variable {
 	 * Constructs an empty Variable object. 
 	 */
 	public Variable() {
-		this("", "", NO_CATEGORY);
+		this(null, null, NO_CATEGORY);
 	}
 	
 	/**
@@ -56,7 +56,7 @@ public class Variable {
 	public Variable(String id, String value, int category) {
 		m_id = (id == null) ? "" : id.trim();
 		m_value = (value == null) ? "" : value.trim();
-		m_category = (category < -1) ? NO_CATEGORY : category;
+		m_category = (category < 0) ? NO_CATEGORY : category;
 	}
 	
 	/**
@@ -90,7 +90,7 @@ public class Variable {
 	 * Changes the category associated with the current variable.
 	 */
 	public void setCategory(int category) {
-		m_category = (category < -1) ? NO_CATEGORY : category;
+		m_category = (category < 0) ? NO_CATEGORY : category;
 	}
 	
 	/**
