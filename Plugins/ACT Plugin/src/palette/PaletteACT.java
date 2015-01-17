@@ -230,9 +230,6 @@ public class PaletteACT extends Palette {
 			out.write(m_data);
 			out.close();
 		}
-		catch(FileNotFoundException e) {
-			throw new PaletteWriteException("File " + m_file.getName() +  " not found.");
-		}
 		catch(IOException e) {
 			throw new PaletteWriteException("Error writing to file " + m_file.getName() +  ": " + e.getMessage());
 		}

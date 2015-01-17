@@ -17,7 +17,7 @@ public class PaletteEditor implements PaletteChangeListener {
 	public static SettingsManager settings;
 	public static SystemConsole console;
 	public static ExtendedClassLoader classLoader;
-	public static PluginManager pluginManager;
+	public static PalettePluginManager pluginManager;
 	private ProgressDialog m_progressDialog;
 	private boolean m_initialized;
 	private static int currentPaletteNumber = 1;
@@ -30,7 +30,7 @@ public class PaletteEditor implements PaletteChangeListener {
 		settings = new SettingsManager();
 		classLoader = new ExtendedClassLoader();
 		console = new SystemConsole();
-		pluginManager = new PluginManager();
+		pluginManager = new PalettePluginManager();
 		
 		m_progressDialog = new ProgressDialog(paletteEditorWindow.getFrame());
 		

@@ -34,7 +34,7 @@ public class PalettePAL extends Palette {
 		0x64, 0x61, 0x74, 0x61, // "data" (single-byte chars) (4 bytes)
 		0x4,  0x4,  0x0,  0x0,  // blank (4 bytes)
 		0x0,  0x3,              // 3 (version number) (short) (2 bytes)
-		0x0,  0x1,              // 256 (16 x 16) (number of colours) (unsigned short) (2 bytes)
+		0x0,  0x1               // 256 (16 x 16) (number of colours) (unsigned short) (2 bytes)
 	};
 	
 	public PalettePAL() {
@@ -310,9 +310,6 @@ public class PalettePAL extends Palette {
 			out.close();
 			
 			return true;
-		}
-		catch(FileNotFoundException e) {
-			throw new PaletteWriteException("File " + m_file.getName() +  " not found.");
 		}
 		catch(IOException e) {
 			throw new PaletteWriteException("Error writing to file " + m_file.getName() +  ": " + e.getMessage());

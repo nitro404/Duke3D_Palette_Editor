@@ -7,11 +7,11 @@ import exception.*;
 import utilities.*;
 import variable.*;
 
-public class PluginManager {
+public class PalettePluginManager {
 	
 	private Vector<PalettePlugin> m_plugins;
 	
-	public PluginManager() {
+	public PalettePluginManager() {
 		m_plugins = new Vector<PalettePlugin>();
 	}
 	

@@ -147,9 +147,12 @@ public class Serializer {
 		if(data.length == 0) { return null; }
 		
 		String s = "";
+		char c = '\0';
 		
 		for(int i=0;i<data.length;i++) {
-			s += (char) (data[i] & 0xff);
+			c = (char) (data[i] & 0xff);
+			if(c == '\0') { break; }
+			s += c;
 		}
 		
 		return s;

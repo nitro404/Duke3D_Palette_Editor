@@ -3,8 +3,7 @@ package gui;
 import java.util.*;
 import java.io.*;
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.datatransfer.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -909,7 +908,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 				fileChooser.setSelectedFile(new File(Utilities.getFileNameNoExtension(fileName) + (selectedPalette.numberOfPalettes() > 1 ? "_" + (currentPaletteIndex + 1) : (Utilities.compareCasePercentage(fileName) < 0 ? "_copy" : "_COPY"))  + "." + (Utilities.compareCasePercentage(fileName) < 0 ? extension.toLowerCase() : extension.toUpperCase())));
 			}
 			else {
-				fileChooser.setSelectedFile(new File("NEW" + (selectedPalette.numberOfPalettes() > + 1 ? "_" + (currentPaletteIndex + 1) : "") +  "." + extension));
+				fileChooser.setSelectedFile(new File("NEW" + (selectedPalette.numberOfPalettes() > 1 ? "_" + (currentPaletteIndex + 1) : "") +  "." + extension));
 			}
 			
 			while(true) {
