@@ -79,13 +79,27 @@ public class Utilities {
 		return upper - lower;
 	}
 	
+	public static String reverseString(String data) {
+		if(data == null) { return null; }
+		
+		String reverse = "";
+		
+		for(int i=0;i<data.length();i++) {
+			reverse += data.charAt(data.length() - i - 1);
+		}
+		
+		return reverse;
+	}
+	
 	public static String getFileNameNoExtension(String fileName) {
 		if(fileName == null) { return null; }
 		
 		int index = fileName.lastIndexOf('.');
-		if(index > 0) {
+		
+		if(index >= 0) {
 			return fileName.substring(0, index);
 		}
+		
 		return fileName;
 	}
 	
@@ -93,9 +107,11 @@ public class Utilities {
 		if(fileName == null) { return null; }
 		
 		int index = fileName.lastIndexOf('.');
-		if(index > 0) {
+		
+		if(index >= 0) {
 			return fileName.substring(index + 1, fileName.length());
 		}
+		
 		return null;
 	}
 	
@@ -104,6 +120,39 @@ public class Utilities {
 		
 		String actualFileExtension = getFileExtension(fileName);
 		return actualFileExtension != null && actualFileExtension.equalsIgnoreCase(fileExtension);
+	}
+
+	public static String reverseFileExtension(String fileName) {
+		if(fileName == null) { return null; }
+		
+		int index = fileName.lastIndexOf('.');
+		
+		if(index >= 0) {
+			return fileName.substring(0, index) + "." + reverseString(fileName.substring(index + 1, fileName.length()));
+		}
+		
+		return fileName;
+	}
+	
+	public static String getFileNameNoPath(String filePath) {
+		if(filePath == null) { return null; }
+		
+		String formattedFilePath = filePath.trim();
+		if(formattedFilePath.length() == 0) { return null; }
+		
+		int lastFileSeparatorIndex = -1;
+		for(int i=formattedFilePath.length()-1;i>=0;i--) {
+			if(formattedFilePath.charAt(i) == '/' || formattedFilePath.charAt(i) == '\\') {
+				lastFileSeparatorIndex = i;
+				break;
+			}
+		}
+		
+		if(lastFileSeparatorIndex != -1) {
+			return formattedFilePath.substring(lastFileSeparatorIndex + 1, formattedFilePath.length());
+		}
+		
+		return filePath;
 	}
 	
 	public static String getFilePath(File file) {
@@ -130,7 +179,7 @@ public class Utilities {
 		}
 		
 		if(path.charAt(path.length() - 1) != '/' && path.charAt(path.length() - 1) != '\\') {
-			path += "/";
+			path += System.getProperty("file.separator");
 		}
 		
 		return path;
@@ -142,10 +191,38 @@ public class Utilities {
 		if(data.length() == 0) { return data; }
 		
 		if(data.charAt(data.length() - 1) != '/' && data.charAt(data.length() - 1) != '\\') {
-			data  += "/";
+			data  += System.getProperty("file.separator");
 		}
 		
 		return data;
+	}
+	
+	public static String truncateFileName(String fileName, int maxLength) {
+		if(fileName == null) { return null; }
+		if(maxLength < 0) { return null; }
+		if(maxLength == 0) { return ""; }
+		
+		String formattedFileName = fileName.trim();
+		
+		if(formattedFileName.length() > maxLength) {
+			int index = formattedFileName.lastIndexOf('.');
+			
+			String extension = "";
+			String originalFileName = fileName;
+			
+			if(index >= 0) {
+				extension = fileName.substring(index + 1, fileName.length());
+				originalFileName = fileName.substring(0, index);
+			}
+			
+			if(maxLength - (extension.length() + (extension.length() > 0 ? 1 : 0)) < 1) {
+				return originalFileName.substring(0, originalFileName.length() >= maxLength ? maxLength : originalFileName.length()); 
+			}
+			
+			return originalFileName.substring(0, maxLength - extension.length() - (extension.length() > 0 ? 1 : 0)) + (extension.length() > 0 ? "." + extension : "");
+		}
+		
+		return formattedFileName;
 	}
 	
 	public static int compareVersions(String v1, String v2) {

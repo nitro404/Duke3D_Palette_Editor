@@ -10,10 +10,12 @@ import javax.swing.event.*;
 import exception.*;
 import utilities.*;
 import settings.*;
-import palette.*;
+import console.*;
 import version.*;
+import action.*;
+import palette.*;
 
-public class PaletteEditorWindow implements WindowListener, ComponentListener, ChangeListener, ActionListener, Updatable {
+public class PaletteEditorWindow implements WindowListener, ComponentListener, ChangeListener, ActionListener, PaletteActionListener, Updatable {
 	
 	private JFrame m_frame;
 	private JTabbedPane m_mainTabbedPane;
@@ -469,6 +471,8 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		PalettePanel newPalettePanel = new PalettePanel(newPalette);
 		
+		newPalettePanel.addPaletteActionListener(this);
+		
 		addPalette(newPalettePanel);
 		
 		newPalettePanel.setChanged(true);
@@ -477,8 +481,19 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 	}
 	
 	public void promptLoadPalettes() {
+		if(PaletteEditor.pluginManager.numberOfLoadedPlugins() == 0) {
+			String message = "No group plugins loaded. You must have at least one group plugin loaded to open a group file.";
+			
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "No Group Plugins Loaded", JOptionPane.ERROR_MESSAGE);
+			
+			return;
+		}
+		
 		JFileChooser fileChooser = new JFileChooser(System.getProperty("user.dir"));
 		fileChooser.setDialogTitle("Load Palette Files");
+		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		fileChooser.setMultiSelectionEnabled(true);
 		if(fileChooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) { return; }
 		
@@ -582,19 +597,27 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		PaletteEditor.console.writeLine("Palette file \"" + file.getName() +  "\" loaded successfully!");
 		
-		addPalette(new PalettePanel(palette));
+		PalettePanel palettePanel = new PalettePanel(palette);
+		
+		palettePanel.addPaletteActionListener(this);
+		
+		addPalette(palettePanel);
 		
 		return true;
 	}
 	
 	public boolean saveSelectedPalette() {
-		return savePalette(getSelectedPalettePanel());
+		return savePalette(getSelectedPalettePanel(), false);
 	}
 	
 	public boolean savePalette(PalettePanel palettePanel) {
+		return savePalette(palettePanel, false);
+	}
+	
+	public boolean savePalette(PalettePanel palettePanel, boolean copy) {
 		if(palettePanel == null) { return false; }
 		
-		if(!palettePanel.isChanged()) {
+		if(!palettePanel.isChanged() && !copy) {
 			int choice = JOptionPane.showConfirmDialog(m_frame, "No changes detected, save palette anyways?", "No Changes", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 			if(choice == JOptionPane.CANCEL_OPTION || choice == JOptionPane.NO_OPTION) { return false; }
 		}
@@ -639,6 +662,8 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		JFileChooser fileChooser = new JFileChooser(paletteFile == null ? System.getProperty("user.dir") : Utilities.getFilePath(paletteFile));
 		fileChooser.setDialogTitle("Save Palette File As");
+		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		fileChooser.setMultiSelectionEnabled(false);
 		if(paletteFile != null) {
 			String fileName = paletteFile.getName();
 			String extension = Utilities.getFileExtension(fileName);
@@ -666,7 +691,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		palettePanel.getPalette().setFile(fileChooser.getSelectedFile());
 		
-		return savePalette(palettePanel);
+		return savePalette(palettePanel, true);
 	}
 	
 	public void saveAllPalettes() {
@@ -679,13 +704,20 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		update();
 	}
 	
-	public boolean importPalette() {
-		PalettePanel selectedPalettePanel = getSelectedPalettePanel();
-		if(selectedPalettePanel == null) { return false; }
-		Palette selectedPalette = selectedPalettePanel.getPalette();
+	public boolean importPaletteIntoSelectedPalette() {
+		return importPaletteInto(getSelectedPalettePanel());
+	}
+	
+	public boolean importPaletteInto(PalettePanel palettePanel) {
+		if(palettePanel == null) { return false; }
 		
-		JFileChooser fileChooser = new JFileChooser(selectedPalette.getFile() == null ? System.getProperty("user.dir") : Utilities.getFilePath(selectedPalette.getFile()));
+		Palette palette = palettePanel.getPalette();
+		if(palette == null) { return false; }
+		
+		JFileChooser fileChooser = new JFileChooser(palette.getFile() == null ? System.getProperty("user.dir") : Utilities.getFilePath(palette.getFile()));
 		fileChooser.setDialogTitle("Import Palette File");
+		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		fileChooser.setMultiSelectionEnabled(false);
 		if(fileChooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) { return false; }
 		if(!fileChooser.getSelectedFile().isFile() || !fileChooser.getSelectedFile().exists()) {
 			PaletteEditor.console.writeLine("Selected palette file \"" + fileChooser.getSelectedFile().getName() + "\" is not a file or does not exist.");
@@ -749,7 +781,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		int importedPaletteIndex = 0;
 		if(importedPalette.numberOfPalettes() > 1) {
-			if(selectedPalette.numberOfPalettes() == importedPalette.numberOfPalettes()) {
+			if(palette.numberOfPalettes() == importedPalette.numberOfPalettes()) {
 				int choice = JOptionPane.showConfirmDialog(m_frame, "The palette you are importing has the same number of sub palettes, would you like to import all sub palettes?", "Import All Sub-Palettes", JOptionPane.YES_NO_CANCEL_OPTION);
 				if(choice == JOptionPane.CANCEL_OPTION) { return false; }
 				if(choice == JOptionPane.YES_OPTION) { importedPaletteIndex = -1; }
@@ -778,8 +810,8 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			localPaletteIndex = -1;
 		}
 		else {
-			if(selectedPalette.numberOfPalettes() > 1) {
-				Vector<String> localPaletteDescriptions = selectedPalette.getPaletteDescriptions();
+			if(palette.numberOfPalettes() > 1) {
+				Vector<String> localPaletteDescriptions = palette.getPaletteDescriptions();
 				Object choices[] = new Object[localPaletteDescriptions.size()];
 				for(int i=0;i<localPaletteDescriptions.size();i++) {
 					choices[i] = new String((i+1) + ": " + localPaletteDescriptions.elementAt(i));
@@ -800,14 +832,14 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		boolean importSuccessful = false;
 		if(localPaletteIndex == -1) {
-			importSuccessful = selectedPalette.updateAllColourData(importedColourData);
+			importSuccessful = palette.updateAllColourData(importedColourData);
 		}
 		else {
-			importSuccessful = selectedPalette.updateColourData(localPaletteIndex, 0, importedColourData);
+			importSuccessful = palette.updateColourData(localPaletteIndex, 0, importedColourData);
 		}
 		
 		if(importSuccessful) {
-			selectedPalettePanel.setChanged(true);
+			palettePanel.setChanged(true);
 			
 			PaletteEditor.console.writeLine("Palette file \"" + selectedFile.getName() +  "\" imported successfully!");
 			
@@ -820,21 +852,26 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		return importSuccessful;
 	}
 	
-	public boolean exportPalette() {
-		PalettePanel selectedPalettePanel = getSelectedPalettePanel();
-		if(selectedPalettePanel == null) { return false; }
-		Palette selectedPalette = selectedPalettePanel.getPalette();
+	public boolean exportSelectedPalette() {
+		return exportPalette(getSelectedPalettePanel());
+	}
+	
+	public boolean exportPalette(PalettePanel palettePanel) {
+		if(palettePanel == null) { return false; }
 		
-		int selectedPaletteIndex = 0;
-		if(selectedPalette.numberOfPalettes() > 1) {
-			if(selectedPalette.numberOfPalettes() == selectedPalette.numberOfPalettes()) {
+		Palette palette = palettePanel.getPalette();
+		if(palette == null) { return false; }
+		
+		int paletteIndex = 0;
+		if(palette.numberOfPalettes() > 1) {
+			if(palette.numberOfPalettes() == palette.numberOfPalettes()) {
 				int choice = JOptionPane.showConfirmDialog(m_frame, "The palette you are exporting has multple sub palettes, would you like to export all of them?", "Export All Sub-Palettes", JOptionPane.YES_NO_CANCEL_OPTION);
 				if(choice == JOptionPane.CANCEL_OPTION) { return false; }
-				if(choice == JOptionPane.YES_OPTION) { selectedPaletteIndex = -1; }
+				if(choice == JOptionPane.YES_OPTION) { paletteIndex = -1; }
 			}
 			
-			if(selectedPaletteIndex != -1) {
-				Vector<String> selectedPaletteDescriptions = selectedPalette.getPaletteDescriptions();
+			if(paletteIndex != -1) {
+				Vector<String> selectedPaletteDescriptions = palette.getPaletteDescriptions();
 				Object choices[] = new Object[selectedPaletteDescriptions.size()];
 				for(int i=0;i<selectedPaletteDescriptions.size();i++) {
 					choices[i] = new String((i+1) + ": " + selectedPaletteDescriptions.elementAt(i));
@@ -843,15 +880,15 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 				if(value == null) { return false; }
 				for(int i=0;i<choices.length;i++) {
 					if(choices[i] == value) {
-						selectedPaletteIndex = i;
+						paletteIndex = i;
 						break;
 					}
 				}
-				if(selectedPaletteIndex < 0 || selectedPaletteIndex >= selectedPaletteDescriptions.size()) { return false; }
+				if(paletteIndex < 0 || paletteIndex >= selectedPaletteDescriptions.size()) { return false; }
 			}
 		}
 		
-		Vector<PalettePlugin> loadedInstantiablePlugins = PaletteEditor.pluginManager.getLoadedInstantiablePluginsExcluding(selectedPalette.getExtension());
+		Vector<PalettePlugin> loadedInstantiablePlugins = PaletteEditor.pluginManager.getLoadedInstantiablePluginsExcluding(palette.getExtension());
 		if(loadedInstantiablePlugins.size() == 0) {
 			PaletteEditor.console.writeLine("No palette plugins found that support instantiation / exporting. Perhaps you forgot to load all plugins?");
 			
@@ -864,7 +901,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		int pluginIndex = -1;
 		int fileTypeIndex = 0;
 		int numberOfPalettesExported = 0;
-		int currentPaletteIndex = selectedPaletteIndex < 0 ? 0 : selectedPaletteIndex;
+		int currentPaletteIndex = paletteIndex < 0 ? 0 : paletteIndex;
 		while(true) {
 			if(useSameExportSettings <= 0) {
 				pluginIndex = -1;
@@ -894,21 +931,23 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 				}
 			}
 			
-			if(selectedPalette.numberOfPalettes() > 1 && useSameExportSettings < 0) {
+			if(palette.numberOfPalettes() > 1 && useSameExportSettings < 0) {
 				int choice = JOptionPane.showConfirmDialog(m_frame, "Would you like to use the same export settings for all sub-palettes?", "Use Same Export Settings?", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 				if(choice == JOptionPane.YES_OPTION) { useSameExportSettings = 1; }
 				else if(choice == JOptionPane.NO_OPTION) { useSameExportSettings = 0; }
 			}
 			
-			JFileChooser fileChooser = new JFileChooser(selectedPalette.getFile() == null ? System.getProperty("user.dir") : Utilities.getFilePath(selectedPalette.getFile()));
+			JFileChooser fileChooser = new JFileChooser(palette.getFile() == null ? System.getProperty("user.dir") : Utilities.getFilePath(palette.getFile()));
 			fileChooser.setDialogTitle("Export Palette File");
+			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			fileChooser.setMultiSelectionEnabled(false);
 			String extension = loadedInstantiablePlugins.elementAt(pluginIndex).getSupportedPaletteFileType(fileTypeIndex);
-			if(selectedPalette.getFile() != null) {
-				String fileName = selectedPalette.getFile().getName();
-				fileChooser.setSelectedFile(new File(Utilities.getFileNameNoExtension(fileName) + (selectedPalette.numberOfPalettes() > 1 ? "_" + (currentPaletteIndex + 1) : (Utilities.compareCasePercentage(fileName) < 0 ? "_copy" : "_COPY"))  + "." + (Utilities.compareCasePercentage(fileName) < 0 ? extension.toLowerCase() : extension.toUpperCase())));
+			if(palette.getFile() != null) {
+				String fileName = palette.getFile().getName();
+				fileChooser.setSelectedFile(new File(Utilities.getFileNameNoExtension(fileName) + (palette.numberOfPalettes() > 1 ? "_" + (currentPaletteIndex + 1) : (Utilities.compareCasePercentage(fileName) < 0 ? "_copy" : "_COPY"))  + "." + (Utilities.compareCasePercentage(fileName) < 0 ? extension.toLowerCase() : extension.toUpperCase())));
 			}
 			else {
-				fileChooser.setSelectedFile(new File("NEW" + (selectedPalette.numberOfPalettes() > 1 ? "_" + (currentPaletteIndex + 1) : "") +  "." + extension));
+				fileChooser.setSelectedFile(new File("NEW" + (palette.numberOfPalettes() > 1 ? "_" + (currentPaletteIndex + 1) : "") +  "." + extension));
 			}
 			
 			while(true) {
@@ -938,14 +977,14 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 				return false;
 			}
 			
-			if(!selectedPalettePanel.updatePaletteData()) {
-				PaletteEditor.console.writeLine("Failed to update palette data for source palette while attempting to export file: \"" + selectedPalette.getFile().getName() + "!");
+			if(!palettePanel.updatePaletteData()) {
+				PaletteEditor.console.writeLine("Failed to update palette data for source palette while attempting to export file: \"" + palette.getFile().getName() + "!");
 				
-				JOptionPane.showMessageDialog(m_frame, "Failed to update palette data for source palette while attempting to export file: \"" + selectedPalette.getFile().getName() + "!", "Update Palette Failed", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(m_frame, "Failed to update palette data for source palette while attempting to export file: \"" + palette.getFile().getName() + "!", "Update Palette Failed", JOptionPane.ERROR_MESSAGE);
 				
 				return false;
 			}
-			newPalette.updateColourData(selectedPalette.getColourData(currentPaletteIndex));
+			newPalette.updateColourData(palette.getColourData(currentPaletteIndex));
 			try {
 				if(newPalette.save()) {
 					PaletteEditor.console.writeLine("Palette successfully exported to new file: " + newPalette.getFile().getName() + "!");
@@ -966,7 +1005,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 				return false;
 			}
 			
-			if(selectedPaletteIndex >= 0 || currentPaletteIndex >= selectedPalette.numberOfPalettes() - 1) {
+			if(paletteIndex >= 0 || currentPaletteIndex >= palette.numberOfPalettes() - 1) {
 				break;
 			}
 			
@@ -974,7 +1013,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		}
 		
 		if(numberOfPalettesExported > 1) {
-			PaletteEditor.console.writeLine("Successfully exported " + numberOfPalettesExported + " sub-palettes from palette: \"" + selectedPalette.getFile().getName() + "\".");
+			PaletteEditor.console.writeLine("Successfully exported " + numberOfPalettesExported + " sub-palettes from palette: \"" + palette.getFile().getName() + "\".");
 		}
 		
 		return true;
@@ -1207,11 +1246,11 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		}
 		// import palette
 		else if(e.getSource() == m_fileImportMenuItem) {
-			importPalette();
+			importPaletteIntoSelectedPalette();
 		}
 		// export palette
 		else if(e.getSource() == m_fileExportMenuItem) {
-			exportPalette();
+			exportSelectedPalette();
 		}
 		// close current palette
 		else if(e.getSource() == m_fileCloseMenuItem) {
@@ -1395,6 +1434,37 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		else if(e.getSource() == m_helpAboutMenuItem) {
 			JOptionPane.showMessageDialog(m_frame, "Palette Editor Version " + PaletteEditor.VERSION + "\nCreated by Kevin Scroggins (a.k.a. nitro_glycerine)\nE-Mail: nitro404@gmail.com\nWebsite: http://www.nitro404.com", "About Palette Editor", JOptionPane.INFORMATION_MESSAGE);
 		}
+	}
+	
+	public boolean handlePaletteAction(PaletteAction action) {
+		if(!PaletteAction.isvalid(action)) { return false; }
+		
+		switch(action.getAction()) {
+			case Save:
+				savePalette(action.getSource());
+				break;
+				
+			case SaveAs:
+				savePaletteAsNew(action.getSource());
+				break;
+				
+			case Import:
+				importPaletteInto(action.getSource());
+				break;
+				
+			case Export:
+				exportPalette(action.getSource());
+				break;
+				
+			case Close:
+				closePalette(action.getSource());
+				break;
+				
+			default:
+				return false;
+		}
+		
+		return true;
 	}
 	
 	public void stateChanged(ChangeEvent e) {

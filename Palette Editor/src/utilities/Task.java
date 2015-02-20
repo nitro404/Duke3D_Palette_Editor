@@ -21,7 +21,7 @@ public class Task {
 		m_cancelled = false;
 		m_listeners = new Vector<TaskListener>();
 		
-		addListener(listener);
+		addTaskListener(listener);
 	}
 	
 	public int getProgress() {
@@ -49,7 +49,7 @@ public class Task {
 		
 		m_progress += progress;
 		
-		notifyListeners();
+		notifyTaskListeners();
 		
 		return true;
 	}
@@ -59,7 +59,7 @@ public class Task {
 		
 		m_progress = progress;
 		
-		notifyListeners();
+		notifyTaskListeners();
 		
 		return true;
 	}
@@ -67,7 +67,7 @@ public class Task {
 	public void setCompleted() {
 		m_progress = m_length;
 		
-		notifyListeners();
+		notifyTaskListeners();
 	}
 	
 	public void cancel() {
@@ -78,7 +78,7 @@ public class Task {
 		}
 	}
 	
-	public boolean addListener(TaskListener listener) {
+	public boolean addTaskListener(TaskListener listener) {
 		if(listener == null) { return false; }
 		
 		m_listeners.add(listener);
@@ -86,17 +86,17 @@ public class Task {
 		return true;
 	}
 	
-	public boolean removeListener(TaskListener listener) {
+	public boolean removeTaskListener(TaskListener listener) {
 		if(listener == null) { return false; }
 		
 		return m_listeners.remove(listener);
 	}
 	
-	public void clearListeners() {
+	public void clearTaskListeners() {
 		m_listeners.clear();
 	}
 	
-	public void notifyListeners() {
+	public void notifyTaskListeners() {
 		for(int i=0;i<m_listeners.size();i++) {
 			m_listeners.elementAt(i).taskProgressChanged(this);
 		}

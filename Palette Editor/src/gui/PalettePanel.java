@@ -8,27 +8,29 @@ import javax.swing.*;
 import exception.*;
 import settings.*;
 import utilities.*;
+import action.*;
 import palette.*;
 
 public class PalettePanel extends JPanel implements Scrollable, ActionListener, MouseListener, Updatable {
 	
-	private int m_paletteNumber;
-	private Palette m_palette;
-	private PixelButton m_buttons[];
-	private Dimension m_dimensions;
-	private Vector<PaletteChangeListener> m_paletteChangeListeners;
-	private boolean m_changed;
-	private boolean m_initialized;
+	protected int m_paletteNumber;
+	protected Palette m_palette;
+	protected PixelButton m_buttons[];
+	protected Dimension m_dimensions;
+	protected boolean m_changed;
+	protected Vector<PaletteChangeListener> m_paletteChangeListeners;
+	protected Vector<PaletteActionListener> m_paletteActionListeners;
+	protected boolean m_initialized;
 	
 	public static final int PALETTE_SPACING = PixelButton.BUTTON_SIZE * 2;
 	
-	private JPopupMenu m_palettePanelPopupMenu;
-	private JMenuItem m_savePopupMenuItem;
-	private JMenuItem m_saveAsPopupMenuItem;
-	private JMenuItem m_importPopupMenuItem;
-	private JMenuItem m_exportPopupMenuItem;
-	private JMenuItem m_closePopupMenuItem;
-	private JMenuItem m_canelPopupMenuItem;
+	protected JPopupMenu m_palettePanelPopupMenu;
+	protected JMenuItem m_savePopupMenuItem;
+	protected JMenuItem m_saveAsPopupMenuItem;
+	protected JMenuItem m_importPopupMenuItem;
+	protected JMenuItem m_exportPopupMenuItem;
+	protected JMenuItem m_closePopupMenuItem;
+	protected JMenuItem m_canelPopupMenuItem;
 	
 	private static final long serialVersionUID = -7026896833349413736L;
 
@@ -37,14 +39,16 @@ public class PalettePanel extends JPanel implements Scrollable, ActionListener, 
 	}
 	
 	public PalettePanel(Palette palette) {
+		m_initialized = false;
+		
 		setLayout(null);
 		setBackground(SettingsManager.defaultBackgroundColour);
 		
 		m_paletteNumber = PaletteEditor.getPaletteNumber();
 		m_dimensions = new Dimension(Palette.PALETTE_WIDTH * PixelButton.BUTTON_SIZE, Palette.PALETTE_HEIGHT * PixelButton.BUTTON_SIZE);
-		m_paletteChangeListeners = new Vector<PaletteChangeListener>();
 		m_changed = false;
-		m_initialized = false;
+		m_paletteChangeListeners = new Vector<PaletteChangeListener>();
+		m_paletteActionListeners = new Vector<PaletteActionListener>();
 		
 		setPalette(palette);
 		
@@ -129,6 +133,58 @@ public class PalettePanel extends JPanel implements Scrollable, ActionListener, 
 		}
 	}
 
+	public int numberOfPaletteActionListeners() {
+		return m_paletteActionListeners.size();
+	}
+	
+	public PaletteActionListener getPaletteActionListener(int index) {
+		if(index < 0 || index >= m_paletteActionListeners.size()) { return null; }
+		
+		return m_paletteActionListeners.elementAt(index);
+	}
+	
+	public boolean hasPaletteActionListener(PaletteActionListener a) {
+		return m_paletteActionListeners.contains(a);
+	}
+	
+	public int indexOfPaletteActionListener(PaletteActionListener a) {
+		return m_paletteActionListeners.indexOf(a);
+	}
+	
+	public boolean addPaletteActionListener(PaletteActionListener a) {
+		if(a == null || m_paletteActionListeners.contains(a)) { return false; }
+		
+		m_paletteActionListeners.add(a);
+		
+		return true;
+	}
+	
+	public boolean removePaletteActionListener(int index) {
+		if(index < 0 || index >= m_paletteActionListeners.size()) { return false; }
+		
+		m_paletteActionListeners.remove(index);
+		
+		return true;
+	}
+	
+	public boolean removePaletteActionListener(PaletteActionListener a) {
+		if(a == null) { return false; }
+		
+		return m_paletteActionListeners.remove(a);
+	}
+	
+	public void clearPaletteActionListeners() {
+		m_paletteActionListeners.clear();
+	}
+	
+	public void dispatchPaletteAction(PaletteAction action) {
+		if(!PaletteAction.isvalid(action)) { return; }
+		
+		for(int i=0;i<m_paletteActionListeners.size();i++) {
+			m_paletteActionListeners.elementAt(i).handlePaletteAction(action);
+		}
+	}
+	
 	public int numberOfPaletteChangeListeners() {
 		return m_paletteChangeListeners.size();
 	}
@@ -321,19 +377,19 @@ public class PalettePanel extends JPanel implements Scrollable, ActionListener, 
 			}
 		}
 		else if(e.getSource() == m_savePopupMenuItem) {
-			PaletteEditor.paletteEditorWindow.saveSelectedPalette();
+			dispatchPaletteAction(new PaletteAction(this, PaletteActionType.Save));
 		}
 		else if(e.getSource() == m_saveAsPopupMenuItem) {
-			PaletteEditor.paletteEditorWindow.saveSelectedPaletteAsNew();
+			dispatchPaletteAction(new PaletteAction(this, PaletteActionType.SaveAs));
 		}
 		else if(e.getSource() == m_importPopupMenuItem) {
-			PaletteEditor.paletteEditorWindow.importPalette();
+			dispatchPaletteAction(new PaletteAction(this, PaletteActionType.Import));
 		}
 		else if(e.getSource() == m_exportPopupMenuItem) {
-			PaletteEditor.paletteEditorWindow.exportPalette();
+			dispatchPaletteAction(new PaletteAction(this, PaletteActionType.Export));
 		}
 		else if(e.getSource() == m_closePopupMenuItem) {
-			PaletteEditor.paletteEditorWindow.closeSelectedPalette();
+			dispatchPaletteAction(new PaletteAction(this, PaletteActionType.Close));
 		}
 	}
 	

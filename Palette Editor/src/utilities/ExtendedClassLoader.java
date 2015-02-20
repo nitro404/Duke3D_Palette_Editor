@@ -2,6 +2,7 @@ package utilities;
 
 import java.util.regex.*;
 import java.io.*;
+import console.*;
 
 public class ExtendedClassLoader extends ClassLoader {
 	
@@ -107,7 +108,11 @@ public class ExtendedClassLoader extends ClassLoader {
 			// if not, define the class
 			if(c == null) {
 				try { c = defineClass(className, classData, 0, classData.length); }
-				catch(ClassFormatError e) {  return null; }
+				catch(ClassFormatError e) {
+					SystemConsole.instance.writeLine("Class \"" + className + "\" is not properly formatted: " + e.getMessage() + " (Maybe try compressing the jar file?)");
+					
+					return null;
+				}
 			}
 			
 			// if the class should be resolved (loaded), do so
@@ -116,6 +121,8 @@ public class ExtendedClassLoader extends ClassLoader {
     		}
     	}
     	catch(Exception e) {
+    		SystemConsole.instance.writeLine("Unexpected exception thrown while deserializing class \"" + className + "\": " + e.getMessage());
+    		
     		return null;
     	}
     	

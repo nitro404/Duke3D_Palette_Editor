@@ -7,6 +7,8 @@ import gui.*;
 
 public class SettingsManager {
 	
+	public static SettingsManager instance = null;
+	
 	private VariableCollection m_settings;
 	
 	public String settingsFileName = defaultSettingsFileName;
@@ -48,8 +50,16 @@ public class SettingsManager {
 	public static final Color defaultBackgroundColour = new Color(238, 238, 238);
 	
 	public SettingsManager() {
+		if(instance == null) {
+			updateInstance();
+		}
+		
 		m_settings = new VariableCollection();
 		reset();
+	}
+
+	public void updateInstance() {
+		instance = this;
 	}
 	
 	public void reset() {
@@ -72,9 +82,13 @@ public class SettingsManager {
 		backgroundColour = defaultBackgroundColour;
 	}
 	
-	public boolean load() { return loadFrom(settingsFileName); }
+	public boolean load() {
+		return loadFrom(settingsFileName);
+	}
 	
-	public boolean save() { return saveTo(settingsFileName); }
+	public boolean save() {
+		return saveTo(settingsFileName);
+	}
 	
 	public boolean loadFrom(String fileName) {
 		VariableCollection variables = VariableCollection.readFrom(fileName);
@@ -97,11 +111,10 @@ public class SettingsManager {
 		// parse auto-save settings value
 		tempString = m_settings.getValue("Auto-Save Settings", "Interface");
 		if(tempString != null) {
-			tempString = tempString.toLowerCase();
-			if(tempString.equals("true")) {
+			if(tempString.equalsIgnoreCase("true")) {
 				autoSaveSettings = true;
 			}
-			else if(tempString.equals("false")) {
+			else if(tempString.equalsIgnoreCase("false")) {
 				autoSaveSettings = false;
 			}
 		}
@@ -109,11 +122,10 @@ public class SettingsManager {
 		// parse auto-load plugins value
 		tempString = m_settings.getValue("Auto-Load Plugins", "Interface");
 		if(tempString != null) {
-			tempString = tempString.toLowerCase();
-			if(tempString.equals("true")) {
+			if(tempString.equalsIgnoreCase("true")) {
 				autoLoadPlugins = true;
 			}
-			else if(tempString.equals("false")) {
+			else if(tempString.equalsIgnoreCase("false")) {
 				autoLoadPlugins = false;
 			}
 		}
@@ -139,11 +151,10 @@ public class SettingsManager {
 		// parse log console value
 		tempString = m_settings.getValue("Log Console", "Console");
 		if(tempString != null) {
-			tempString = tempString.toLowerCase();
-			if(tempString.equals("true")) {
+			if(tempString.equalsIgnoreCase("true")) {
 				logConsole = true;
 			}
-			else if(tempString.equals("false")) {
+			else if(tempString.equalsIgnoreCase("false")) {
 				logConsole = false;
 			}
 		}
@@ -151,11 +162,10 @@ public class SettingsManager {
 		// parse supress update notifications value
 		tempString = m_settings.getValue("Supress Update Notifications", "Interface");
 		if(tempString != null) {
-			tempString = tempString.toLowerCase();
-			if(tempString.equals("true")) {
+			if(tempString.equalsIgnoreCase("true")) {
 				supressUpdates = true;
 			}
-			else if(tempString.equals("false")) {
+			else if(tempString.equalsIgnoreCase("false")) {
 				supressUpdates = false;
 			}
 		}

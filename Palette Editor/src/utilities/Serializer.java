@@ -22,60 +22,98 @@ public class Serializer {
 		return (boolean) (data[0] != 0);
 	}
 	
-	// serialize a short to a byte array
+	// serialize a short to a byte array using default endianness
 	public static byte[] serializeShort(short s) {
+		return serializeShort(s, Endianness.defaultEndianness);
+	}
+	
+	// serialize a short to a byte array
+	public static byte[] serializeShort(short s, Endianness e) {
+		if(!e.isValid()) { return null; }
 		byte[] data = new byte[2];
-		data[0] = (byte) (s >> 8);
-		data[1] = (byte) (s);
+		data[e == Endianness.BigEndian ? 0 : 1] = (byte) (s >> 8);
+		data[e == Endianness.BigEndian ? 1 : 0] = (byte) (s);
 		return data;
+	}
+	
+	// deserialize a byte array back into a short using default endinanness
+	public static short deserializeShort(byte[] data) {
+		return deserializeShort(data, Endianness.defaultEndianness);
 	}
 	
 	// deserialize a byte array back into a short
-	public static short deserializeShort(byte[] data) {
+	public static short deserializeShort(byte[] data, Endianness e) {
+		if(!e.isValid()) { return -1; }
 		if(data == null || data.length != 2) { return -1; }
-		return (short) (data[0] << 8
-					 | (data[1] & 0xff));
+		return (short) (data[e == Endianness.BigEndian ? 0 : 1] << 8
+					 | (data[e == Endianness.BigEndian ? 1 : 0] & 0xff));
+	}
+	
+	// serialize an integer to a byte array using default endinanness
+	public static byte[] serializeInteger(int i) {
+		return serializeInteger(i, Endianness.defaultEndianness);
 	}
 	
 	// serialize an integer to a byte array
-	public static byte[] serializeInteger(int i) {
+	public static byte[] serializeInteger(int i, Endianness e) {
+		if(!e.isValid()) { return null; }
 		byte[] data = new byte[4];
-		data[0] = (byte) (i >> 24);
-		data[1] = (byte) (i >> 16);
-		data[2] = (byte) (i >> 8);
-		data[3] = (byte) (i);
+		data[e == Endianness.BigEndian ? 0 : 3] = (byte) (i >> 24);
+		data[e == Endianness.BigEndian ? 1 : 2] = (byte) (i >> 16);
+		data[e == Endianness.BigEndian ? 2 : 1] = (byte) (i >> 8);
+		data[e == Endianness.BigEndian ? 3 : 0] = (byte) (i);
 		return data;
+	}
+	
+	// deserialize a byte array back into an integer using default endinanness
+	public static int deserializeInteger(byte[] data) {
+		return deserializeInteger(data, Endianness.defaultEndianness);
 	}
 	
 	// deserialize a byte array back into an integer
-	public static int deserializeInteger(byte[] data) {
+	public static int deserializeInteger(byte[] data, Endianness e) {
+		if(!e.isValid()) { return -1; }
 		if(data == null || data.length != 4) { return -1; }
-		return (int) (data[0] << 24
-				   | (data[1] & 0xff) << 16
-				   | (data[2] & 0xff) << 8
-				   | (data[3] & 0xff));
+		return (int) (data[e == Endianness.BigEndian ? 0 : 3] << 24
+				   | (data[e == Endianness.BigEndian ? 1 : 2] & 0xff) << 16
+				   | (data[e == Endianness.BigEndian ? 2 : 1] & 0xff) << 8
+				   | (data[e == Endianness.BigEndian ? 3 : 0] & 0xff));
+	}
+	
+	// serialize a long to a byte array using default endinanness
+	public static byte[] serializeLong(long l) {
+		return serializeLong(l, Endianness.defaultEndianness);
 	}
 	
 	// serialize a long to a byte array
-	public static byte[] serializeLong(long l) {
+	public static byte[] serializeLong(long l, Endianness e) {
+		if(!e.isValid()) { return null; }
 		byte[] data = new byte[8];
-		data[0] = (byte) (l >> 56);
-		data[1] = (byte) (l >> 48);
-		data[2] = (byte) (l >> 40);
-		data[3] = (byte) (l >> 32);
-		data[4] = (byte) (l >> 24);
-		data[5] = (byte) (l >> 16);
-		data[6] = (byte) (l >> 8);
-		data[7] = (byte) (l);
+		data[e == Endianness.BigEndian ? 0 : 7] = (byte) (l >> 56);
+		data[e == Endianness.BigEndian ? 1 : 6] = (byte) (l >> 48);
+		data[e == Endianness.BigEndian ? 2 : 5] = (byte) (l >> 40);
+		data[e == Endianness.BigEndian ? 3 : 4] = (byte) (l >> 32);
+		data[e == Endianness.BigEndian ? 4 : 3] = (byte) (l >> 24);
+		data[e == Endianness.BigEndian ? 5 : 2] = (byte) (l >> 16);
+		data[e == Endianness.BigEndian ? 6 : 1] = (byte) (l >> 8);
+		data[e == Endianness.BigEndian ? 7 : 0] = (byte) (l);
 		return data;
 	}
 	
-	// deserialize a byte array back into a long
+	// deserialize a byte array back into a long using default endinanness
 	public static long deserializeLong(byte[] data) {
+		return deserializeLong(data, Endianness.defaultEndianness);
+	}
+	
+	// deserialize a byte array back into a long
+	public static long deserializeLong(byte[] data, Endianness e) {
+		if(!e.isValid()) { return -1L; }
 		if(data == null || data.length != 8) { return -1; }
 		long l = 0;
+		int x;
 		for(int i=0;i<8;++i) {
-			l |= ((long) data[i] & 0xff) << ((8-i-1) << 3);
+			x = e == Endianness.BigEndian ? i : 7 - i;
+			l |= ((long) data[x] & 0xff) << ((8-x-1) << 3);
 		}
 		return l;
 	}
@@ -110,19 +148,31 @@ public class Serializer {
 		return (char) (data & 0xff);
 	}
 	
-	// serialize a character to a byte array
+	// serialize a character to a byte array using default endinanness
 	public static byte[] serializeCharacter(char c) {
+		return serializeCharacter(c, Endianness.defaultEndianness);
+	}
+	
+	// serialize a character to a byte array
+	public static byte[] serializeCharacter(char c, Endianness e) {
+		if(!e.isValid()) { return null; }
 		byte[] data = new byte[2];
-		data[0] = (byte) (c >> 8);
-		data[1] = (byte) (c);
+		data[e == Endianness.BigEndian ? 0 : 1] = (byte) (c >> 8);
+		data[e == Endianness.BigEndian ? 1 : 0] = (byte) (c);
 		return data;
 	}
 	
-	// deserialize a byte array back into a character
+	// deserialize a byte array back into a character using default endinanness
 	public static char deserializeCharacter(byte[] data) {
+		return deserializeCharacter(data, Endianness.defaultEndianness);
+	}
+	
+	// deserialize a byte array back into a character
+	public static char deserializeCharacter(byte[] data, Endianness e) {
+		if(!e.isValid()) { return '\0'; }
 		if(data == null || data.length != 2) { return '\0'; }
-		return (char) (data[0] << 8
-					| (data[1] & 0xff));
+		return (char) (data[e == Endianness.BigEndian ? 0 : 1] << 8
+					| (data[e == Endianness.BigEndian ? 1 : 0] & 0xff));
 	}
 	
 	// serialize the specified byte string
@@ -158,33 +208,42 @@ public class Serializer {
 		return s;
 	}
 	
-	// serialize the specified string
+	// serialize the specified string using default endianness
 	public static byte[] serializeString(String s) {
-		if(s == null) { return null; }
-		if(s.length() == 0) { return null; }
+		return serializeString(s, Endianness.defaultEndianness);
+	}
+	
+	// serialize the specified string
+	public static byte[] serializeString(String s, Endianness e) {
+		if(s == null || s.length() == 0 || !e.isValid()) { return null; }
 		
 		byte[] data = new byte[s.length() * 2];
 		
 		// serialize and store the bytes for each character in the string
 		int j = 0;
 		for(int i=0;i<s.length();i++) {
-			data[j++] = (byte) (s.charAt(i) >> 8);
-			data[j++] = (byte) (s.charAt(i));
+			data[e == Endianness.BigEndian ? j : j + 1] = (byte) (s.charAt(i) >> 8);
+			data[e == Endianness.BigEndian ? j + 1 : j] = (byte) (s.charAt(i));
+			j += 2;
 		}
 		
 		return data;
 	}
 	
-	// de-serialize the specified string
+	// de-serialize the specified string using default endianness
 	public static String deserializeString(byte[] data) {
-		if(data == null) { return null; }
-		if(data.length == 0 || data.length % 2 != 0) { return null; }
+		return deserializeString(data, Endianness.defaultEndianness);
+	}
+	
+	// de-serialize the specified string
+	public static String deserializeString(byte[] data, Endianness e) {
+		if(data == null || data.length == 0 || data.length % 2 != 0 || !e.isValid()) { return null; }
 		
 		String s = "";
 		
 		for(int i=0;i<data.length;i+=2) {
-			s += (char) (data[i] << 8
-					  | (data[i+1] & 0xff));
+			s += (char) (data[e == Endianness.BigEndian ? i : i + 1] << 8
+					  | (data[e == Endianness.BigEndian ? i + 1 : i] & 0xff));
 		}
 		
 		return s;
@@ -312,66 +371,96 @@ public class Serializer {
 		return true;
 	}
 	
-	// read a serialized short off of a specified input stream
+	// read a serialized short off of a specified input stream using default endianness
 	public static short readShort(InputStream in) throws IOException {
-		if(in == null) { return -1; }
+		return readShort(in, Endianness.defaultEndianness);
+	}
+	
+	// read a serialized short off of a specified input stream
+	public static short readShort(InputStream in, Endianness e) throws IOException {
+		if(in == null || !e.isValid()) { return -1; }
 		
 		byte[] data = new byte[2];
 		
 		in.read(data);
 		
-		return deserializeShort(data);
+		return deserializeShort(data, e);
+	}
+	
+	// serialize and write a short to a specified output stream using default endianness
+	public static boolean writeShort(short s, OutputStream out) throws IOException {
+		return writeShort(s, out, Endianness.defaultEndianness);
 	}
 	
 	// serialize and write a short to a specified output stream
-	public static boolean writeShort(short s, OutputStream out) throws IOException {
-		if(out == null) { return false; }
+	public static boolean writeShort(short s, OutputStream out, Endianness e) throws IOException {
+		if(out == null || !e.isValid()) { return false; }
 		
-		byte[] data = serializeShort(s);
+		byte[] data = serializeShort(s, e);
 		
 		out.write(data, 0, data.length);
 		
 		return true;
 	}
 	
-	// read a serialized integer off of a specified input stream
+	// read a serialized integer off of a specified input stream using default endianness
 	public static int readInteger(InputStream in) throws IOException {
-		if(in == null) { return -1; }
+		return readInteger(in, Endianness.defaultEndianness);
+	}
+	
+	// read a serialized integer off of a specified input stream
+	public static int readInteger(InputStream in, Endianness e) throws IOException {
+		if(in == null || !e.isValid()) { return -1; }
 		
 		byte[] data = new byte[4];
 		
 		in.read(data);
 		
-		return deserializeInteger(data);
+		return deserializeInteger(data, e);
+	}
+	
+	// serialize and write an integer to a specified output stream using default endianness
+	public static boolean writeInteger(int i, OutputStream out) throws IOException {
+		return writeInteger(i, out, Endianness.defaultEndianness);
 	}
 	
 	// serialize and write an integer to a specified output stream
-	public static boolean writeInteger(int i, OutputStream out) throws IOException {
+	public static boolean writeInteger(int i, OutputStream out, Endianness e) throws IOException {
 		if(out == null) { return false; }
 		
-		byte[] data = serializeInteger(i);
+		byte[] data = serializeInteger(i, e);
 		
 		out.write(data, 0, data.length);
 		
 		return true;
 	}
 	
-	// read a serialized long off of a specified input stream
+	// read a serialized long off of a specified input stream using default endianness
 	public static long readLong(InputStream in) throws IOException {
-		if(in == null) { return -1; }
+		return readLong(in, Endianness.defaultEndianness);
+	}
+	
+	// read a serialized long off of a specified input stream
+	public static long readLong(InputStream in, Endianness e) throws IOException {
+		if(in == null || !e.isValid()) { return -1; }
 		
 		byte[] data = new byte[8];
 		
 		in.read(data);
 		
-		return deserializeLong(data);
+		return deserializeLong(data, e);
+	}
+	
+	// serialize and write a long to a specified output stream using default endianness
+	public static boolean writeLong(long l, OutputStream out) throws IOException {
+		return writeLong(l, out, Endianness.defaultEndianness);
 	}
 	
 	// serialize and write a long to a specified output stream
-	public static boolean writeLong(long l, OutputStream out) throws IOException {
-		if(out == null) { return false; }
+	public static boolean writeLong(long l, OutputStream out, Endianness e) throws IOException {
+		if(out == null || !e.isValid()) { return false; }
 		
-		byte[] data = serializeLong(l);
+		byte[] data = serializeLong(l, e);
 		
 		out.write(data, 0, data.length);
 		
@@ -444,31 +533,46 @@ public class Serializer {
 		return true;
 	}
 	
-	// read a serialized character off of a specified input stream
+	// read a serialized character off of a specified input stream using default endianness
 	public static char readCharacter(InputStream in) throws IOException {
-		if(in == null) { return '\0'; }
+		return readCharacter(in, Endianness.defaultEndianness);
+	}
+	
+	// read a serialized character off of a specified input stream
+	public static char readCharacter(InputStream in, Endianness e) throws IOException {
+		if(in == null || !e.isValid()) { return '\0'; }
 		
 		byte[] data = new byte[2];
 		
 		in.read(data);
 		
-		return deserializeCharacter(data);
+		return deserializeCharacter(data, e);
+	}
+	
+	// serialize and write a character to a specified output stream using default endianness
+	public static boolean writeCharacter(char c, OutputStream out) throws IOException {
+		return writeCharacter(c, out, Endianness.defaultEndianness);
 	}
 	
 	// serialize and write a character to a specified output stream
-	public static boolean writeCharacter(char c, OutputStream out) throws IOException {
-		if(out == null) { return false; }
+	public static boolean writeCharacter(char c, OutputStream out, Endianness e) throws IOException {
+		if(out == null || !e.isValid()) { return false; }
 		
-		byte[] data = serializeCharacter(c);
+		byte[] data = serializeCharacter(c, e);
 		
 		out.write(data, 0, data.length);
 		
 		return true;
 	}
+	
+	// read characters off of the specified input stream until a newline or cr character is encountered using default endianness
+	public static String readLine(InputStream in) throws IOException {
+		return readLine(in, Endianness.defaultEndianness);
+	}
 
 	// read characters off of the specified input stream until a newline or cr character is encountered
-	public static String readLine(InputStream in) throws IOException {
-		if(in == null) { return null; }
+	public static String readLine(InputStream in, Endianness e) throws IOException {
+		if(in == null || !e.isValid()) { return null; }
 		
 		char c = '\0';
 		String s = new String("");
@@ -477,7 +581,7 @@ public class Serializer {
 		byte[] data = new byte[2];
 		while(true) {
 			in.read(data);
-			c = deserializeCharacter(data);
+			c = deserializeCharacter(data, e);
 			if(c == '\n' || c == '\r') { break; }
 			
 			s += c;
@@ -485,9 +589,14 @@ public class Serializer {
 		return s;
 	}
 	
-	// read characters off of the specified input stream until a newline, cr, space or tab character is encountered
+	// read characters off of the specified input stream until a newline, cr, space or tab character is encountered using default endianness
 	public static String readToken(InputStream in) throws IOException {
-		if(in == null) { return null; }
+		return readToken(in, Endianness.defaultEndianness);
+	}
+	
+	// read characters off of the specified input stream until a newline, cr, space or tab character is encountered
+	public static String readToken(InputStream in, Endianness e) throws IOException {
+		if(in == null || !e.isValid()) { return null; }
 		
 		char c = '\0';
 		String s = new String("");
@@ -496,7 +605,7 @@ public class Serializer {
 		byte[] data = new byte[2];
 		while(true) {
 			in.read(data);
-			c = deserializeCharacter(data);
+			c = deserializeCharacter(data, e);
 			if(c == '\n' || c == '\r' || c == '\t' || c == ' ') { break; }
 			
 			s += c;
