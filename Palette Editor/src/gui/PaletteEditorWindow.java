@@ -128,8 +128,8 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		updateWindow();
 		
-		m_frame.setLocation(PaletteEditor.settings.windowPositionX, PaletteEditor.settings.windowPositionY);
-		m_frame.setSize(PaletteEditor.settings.windowWidth, PaletteEditor.settings.windowHeight);
+		m_frame.setLocation(SettingsManager.instance.windowPositionX, SettingsManager.instance.windowPositionY);
+		m_frame.setSize(SettingsManager.instance.windowWidth, SettingsManager.instance.windowHeight);
 		
 		// update and show the gui window
 		update();
@@ -425,9 +425,11 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 	public boolean promptNewPalette() {
 		Vector<PalettePlugin> loadedInstantiablePlugins = PaletteEditor.pluginManager.getLoadedInstantiablePlugins();
 		if(loadedInstantiablePlugins.size() == 0) {
-			PaletteEditor.console.writeLine("No palette plugins found that support instantiation. Perhaps you forgot to load all plugins?");
+			String message = "No palette plugins found that support instantiation. Perhaps you forgot to load all plugins?";
 			
-			JOptionPane.showMessageDialog(m_frame, "No palette plugins found that support instantiation. Perhaps you forgot to load all plugins?", "No Plugins", JOptionPane.ERROR_MESSAGE);
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "No Plugins", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
 		}
@@ -449,9 +451,11 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			newPalette = loadedInstantiablePlugins.elementAt(pluginIndex).getPaletteInstance(null);
 		}
 		catch(PaletteInstantiationException e) {
-			PaletteEditor.console.writeLine("Failed to create instance of \"" + loadedInstantiablePlugins.elementAt(pluginIndex).getName() + "\"!");
+			String message = "Failed to create instance of \"" + loadedInstantiablePlugins.elementAt(pluginIndex).getName() + "\"!";
 			
-			JOptionPane.showMessageDialog(m_frame, "Failed to create instance of \"" + loadedInstantiablePlugins.elementAt(pluginIndex).getName() + "\"!", "Instantiation Failed", JOptionPane.ERROR_MESSAGE);
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "Instantiation Failed", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
 		}
@@ -460,14 +464,16 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		if(fillColour == null) { return false; }
 		
 		if(!newPalette.fillAllWithColour(fillColour)) {
-			PaletteEditor.console.writeLine("Failed to fill palette with specified colour!");
+			String message = "Failed to fill palette with specified colour!";
 			
-			JOptionPane.showMessageDialog(m_frame, "Failed to fill palette with specified colour!", "Palette Fill Failed", JOptionPane.ERROR_MESSAGE);
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "Palette Fill Failed", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
 		}
 		
-		PaletteEditor.console.writeLine(loadedInstantiablePlugins.elementAt(pluginIndex).getName() + " palette created successfully!");
+		SystemConsole.instance.writeLine(loadedInstantiablePlugins.elementAt(pluginIndex).getName() + " palette created successfully!");
 		
 		PalettePanel newPalettePanel = new PalettePanel(newPalette);
 		
@@ -482,11 +488,11 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 	
 	public void promptLoadPalettes() {
 		if(PaletteEditor.pluginManager.numberOfLoadedPlugins() == 0) {
-			String message = "No group plugins loaded. You must have at least one group plugin loaded to open a group file.";
+			String message = "No palette plugins loaded. You must have at least one palette plugin loaded to open a palette file.";
 			
 			SystemConsole.instance.writeLine(message);
 			
-			JOptionPane.showMessageDialog(m_frame, message, "No Group Plugins Loaded", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(m_frame, message, "No Palette Plugins Loaded", JOptionPane.ERROR_MESSAGE);
 			
 			return;
 		}
@@ -515,10 +521,10 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		if(files.length > 0) {
 			int numberOfPalettesFailed = files.length - numberOfPalettesLoaded;
 			if(numberOfPalettesLoaded == 0 && numberOfPalettesFailed > 0) {
-				PaletteEditor.console.writeLine(numberOfPalettesFailed + " palette file" + (numberOfPalettesFailed == 1 ? "" : "s") + " failed to load, no palette files loaded.");
+				SystemConsole.instance.writeLine(numberOfPalettesFailed + " palette file" + (numberOfPalettesFailed == 1 ? "" : "s") + " failed to load, no palette files loaded.");
 			}
 			else if(numberOfPalettesLoaded > 1) {
-				PaletteEditor.console.writeLine(numberOfPalettesLoaded + " palette files were loaded successfully" + (numberOfPalettesFailed == 0 ? "" : ", while " + numberOfPalettesFailed + " failed to load") + "!");
+				SystemConsole.instance.writeLine(numberOfPalettesLoaded + " palette files were loaded successfully" + (numberOfPalettesFailed == 0 ? "" : ", while " + numberOfPalettesFailed + " failed to load") + "!");
 			}
 		}
 		
@@ -527,7 +533,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 	
 	public boolean loadPalette(File file) {
 		if(file == null || !file.exists()) {
-			PaletteEditor.console.writeLine("File \"" + file.getName() + "\" does not exist.");
+			SystemConsole.instance.writeLine("File \"" + file.getName() + "\" does not exist.");
 			return false;
 		}
 		
@@ -535,9 +541,11 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			if(m_palettePanels.elementAt(i).isSameFile(file)) {
 				selectPalettePanel(m_palettePanels.elementAt(i));
 				
-				PaletteEditor.console.writeLine("Palette file \"" + (file == null ? "null" : file.getName()) +  "\" already loaded!");
+				String message = "Palette file \"" + (file == null ? "null" : file.getName()) +  "\" already loaded!";
 				
-				JOptionPane.showMessageDialog(m_frame, "Palette file \"" + (file == null ? "null" : file.getName()) +  "\" already loaded!", "Already Loaded", JOptionPane.INFORMATION_MESSAGE);
+				SystemConsole.instance.writeLine(message);
+				
+				JOptionPane.showMessageDialog(m_frame, message, "Already Loaded", JOptionPane.INFORMATION_MESSAGE);
 				
 				return true;
 			}
@@ -547,9 +555,11 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		PalettePlugin plugin = PaletteEditor.pluginManager.getPluginForFileType(extension);
 		if(plugin == null) {
-			PaletteEditor.console.writeLine("No plugin found to load " + extension + " file type. Perhaps you forgot to load all plugins?");
+			String message = "No plugin found to load " + extension + " file type. Perhaps you forgot to load all plugins?";
 			
-			JOptionPane.showMessageDialog(m_frame, "No plugin found to load " + extension + " file type. Perhaps you forgot to load all plugins?", "No Plugin Found", JOptionPane.ERROR_MESSAGE);
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "No Plugin Found", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
 		}
@@ -557,45 +567,51 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		Palette palette = null;
 		try { palette = plugin.getPaletteInstance(file); }
 		catch(PaletteInstantiationException e) {
-			PaletteEditor.console.writeLine(e.getMessage());
+			SystemConsole.instance.writeLine(e.getMessage());
 			
 			JOptionPane.showMessageDialog(m_frame, e.getMessage(), "Plugin Instantiation Failed", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
 		}
 		if(palette == null) {
-			PaletteEditor.console.writeLine("Failed to instantiate \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\" plugin when attempting to read palette file: \"" + file.getName() + "\".");
+			String message = "Failed to instantiate \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\" plugin when attempting to read palette file: \"" + file.getName() + "\".";
 			
-			JOptionPane.showMessageDialog(m_frame, "Failed to instantiate \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\" plugin when attempting to read palette file: \"" + file.getName() + "\".", "Plugin Instantiation Failed", JOptionPane.ERROR_MESSAGE);
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "Plugin Instantiation Failed", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
 		}
 		
 		try {
 			if(!palette.load()) {
-				PaletteEditor.console.writeLine("Failed to load palette: \"" + file.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\".");
+				String message = "Failed to load palette: \"" + file.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\".";
 				
-				JOptionPane.showMessageDialog(m_frame, "Failed to load palette: \"" + file.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\".", "Palette Loading Failed", JOptionPane.ERROR_MESSAGE);
+				SystemConsole.instance.writeLine(message);
+				
+				JOptionPane.showMessageDialog(m_frame, message, "Palette Loading Failed", JOptionPane.ERROR_MESSAGE);
 				
 				return false;
 			}
 		}
 		catch(HeadlessException e) {
-			PaletteEditor.console.writeLine("Exception thrown while loading palette : \"" + file.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + "): " + e.getMessage());
+			String message = "Exception thrown while loading palette : \"" + file.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + "): " + e.getMessage();
 			
-			JOptionPane.showMessageDialog(m_frame, "Exception thrown while loading palette : \"" + file.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + "): " + e.getMessage(), "Palette Loading Failed", JOptionPane.ERROR_MESSAGE);
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "Palette Loading Failed", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
 		}
 		catch(PaletteReadException e) {
-			PaletteEditor.console.writeLine(e.getMessage());
+			SystemConsole.instance.writeLine(e.getMessage());
 			
 			JOptionPane.showMessageDialog(m_frame, e.getMessage(), "Palette Loading Failed", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
 		}
 		
-		PaletteEditor.console.writeLine("Palette file \"" + file.getName() +  "\" loaded successfully!");
+		SystemConsole.instance.writeLine("Palette file \"" + file.getName() +  "\" loaded successfully!");
 		
 		PalettePanel palettePanel = new PalettePanel(palette);
 		
@@ -630,22 +646,24 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		try {
 			if(palettePanel.save()) {
-				PaletteEditor.console.writeLine("Palette successfully updated and saved to file: " + paletteFile.getName() + "!");
+				SystemConsole.instance.writeLine("Palette successfully updated and saved to file: " + paletteFile.getName() + "!");
 				
 				update();
 				
 				return true;
 			}
 			else {
-				PaletteEditor.console.writeLine("Failed to update and save palette!");
+				String message = "Failed to update and save palette!";
 				
-				JOptionPane.showMessageDialog(m_frame, "Failed to update and save palette!", "Save Failed", JOptionPane.ERROR_MESSAGE);
+				SystemConsole.instance.writeLine(message);
+				
+				JOptionPane.showMessageDialog(m_frame, message, "Save Failed", JOptionPane.ERROR_MESSAGE);
 				
 				return false;
 			}
 		}
 		catch(PaletteWriteException e) {
-			PaletteEditor.console.writeLine(e.getMessage());
+			SystemConsole.instance.writeLine(e.getMessage());
 			
 			return false;
 		}
@@ -720,9 +738,11 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		fileChooser.setMultiSelectionEnabled(false);
 		if(fileChooser.showOpenDialog(null) != JFileChooser.APPROVE_OPTION) { return false; }
 		if(!fileChooser.getSelectedFile().isFile() || !fileChooser.getSelectedFile().exists()) {
-			PaletteEditor.console.writeLine("Selected palette file \"" + fileChooser.getSelectedFile().getName() + "\" is not a file or does not exist.");
+			String message = "Selected palette file \"" + fileChooser.getSelectedFile().getName() + "\" is not a file or does not exist.";
 			
-			JOptionPane.showMessageDialog(m_frame, "Selected palette file \"" + fileChooser.getSelectedFile().getName() + "\" is not a file or does not exist.", "Invalid or Missing File", JOptionPane.ERROR_MESSAGE);
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "Invalid or Missing File", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
 		}
@@ -731,9 +751,11 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		PalettePlugin plugin = PaletteEditor.pluginManager.getPluginForFileType(extension);
 		if(plugin == null) {
-			PaletteEditor.console.writeLine("No plugin found to import " + extension + " file type. Perhaps you forgot to load all plugins?");
+			String message = "No plugin found to import " + extension + " file type. Perhaps you forgot to load all plugins?";
 			
-			JOptionPane.showMessageDialog(m_frame, "No plugin found to import " + extension + " file type. Perhaps you forgot to load all plugins?", "No Plugin Found", JOptionPane.ERROR_MESSAGE);
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "No Plugin Found", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
 		}
@@ -741,38 +763,44 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		Palette importedPalette = null;
 		try { importedPalette = plugin.getPaletteInstance(selectedFile); }
 		catch(PaletteInstantiationException e) {
-			PaletteEditor.console.writeLine(e.getMessage());
+			SystemConsole.instance.writeLine(e.getMessage());
 			
 			JOptionPane.showMessageDialog(m_frame, e.getMessage(), "Plugin Instantiation Failed", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
 		}
 		if(importedPalette == null) {
-			PaletteEditor.console.writeLine("Failed to instantiate \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\" plugin when attempting to import palette file: \"" + selectedFile.getName() + "\".");
+			String message = "Failed to instantiate \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\" plugin when attempting to import palette file: \"" + selectedFile.getName() + "\".";
 			
-			JOptionPane.showMessageDialog(m_frame, "Failed to instantiate \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\" plugin when attempting to import palette file: \"" + selectedFile.getName() + "\".", "Plugin Instantiation Failed", JOptionPane.ERROR_MESSAGE);
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "Plugin Instantiation Failed", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
 		}
 		
 		try {
 			if(!importedPalette.load()) {
-				PaletteEditor.console.writeLine("Failed to import palette: \"" + selectedFile.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\".");
+				String message = "Failed to import palette: \"" + selectedFile.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\".";
 				
-				JOptionPane.showMessageDialog(m_frame, "Failed to import palette: \"" + selectedFile.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\".", "Palette Loading Failed", JOptionPane.ERROR_MESSAGE);
+				SystemConsole.instance.writeLine(message);
+				
+				JOptionPane.showMessageDialog(m_frame, message, "Palette Loading Failed", JOptionPane.ERROR_MESSAGE);
 				
 				return false;
 			}
 		}
 		catch(HeadlessException e) {
-			PaletteEditor.console.writeLine("Exception thrown while importing palette : \"" + selectedFile.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + "): " + e.getMessage());
+			String message = "Exception thrown while importing palette : \"" + selectedFile.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + "): " + e.getMessage();
 			
-			JOptionPane.showMessageDialog(m_frame, "Exception thrown while importing palette : \"" + selectedFile.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + "): " + e.getMessage(), "Palette Loading Failed", JOptionPane.ERROR_MESSAGE);
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "Palette Loading Failed", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
 		}
 		catch(PaletteReadException e) {
-			PaletteEditor.console.writeLine(e.getMessage());
+			SystemConsole.instance.writeLine(e.getMessage());
 			
 			JOptionPane.showMessageDialog(m_frame, e.getMessage(), "Palette Importing Failed", JOptionPane.ERROR_MESSAGE);
 			
@@ -841,12 +869,12 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		if(importSuccessful) {
 			palettePanel.setChanged(true);
 			
-			PaletteEditor.console.writeLine("Palette file \"" + selectedFile.getName() +  "\" imported successfully!");
+			SystemConsole.instance.writeLine("Palette file \"" + selectedFile.getName() +  "\" imported successfully!");
 			
 			update();
 		}
 		else {
-			PaletteEditor.console.writeLine("Failed to import palette file \"" + selectedFile.getName() +  "\" imported successfully!");
+			SystemConsole.instance.writeLine("Failed to import palette file \"" + selectedFile.getName() +  "\" imported successfully!");
 		}
 		
 		return importSuccessful;
@@ -890,9 +918,11 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		Vector<PalettePlugin> loadedInstantiablePlugins = PaletteEditor.pluginManager.getLoadedInstantiablePluginsExcluding(palette.getExtension());
 		if(loadedInstantiablePlugins.size() == 0) {
-			PaletteEditor.console.writeLine("No palette plugins found that support instantiation / exporting. Perhaps you forgot to load all plugins?");
+			String message = "No palette plugins found that support instantiation / exporting. Perhaps you forgot to load all plugins?";
 			
-			JOptionPane.showMessageDialog(m_frame, "No palette plugins found that support instantiation / exporting. Perhaps you forgot to load all plugins?", "No Plugins", JOptionPane.ERROR_MESSAGE);
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "No Plugins", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
 		}
@@ -970,37 +1000,43 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 				newPalette = loadedInstantiablePlugins.elementAt(pluginIndex).getPaletteInstance(fileChooser.getSelectedFile());
 			}
 			catch(PaletteInstantiationException e) {
-				PaletteEditor.console.writeLine("Failed to create instance of export file: \"" + loadedInstantiablePlugins.elementAt(pluginIndex).getName() + " (" + loadedInstantiablePlugins.elementAt(pluginIndex).getSupportedPaletteFileTypesAsString() + ")!");
+				String message = "Failed to create instance of export file: \"" + loadedInstantiablePlugins.elementAt(pluginIndex).getName() + " (" + loadedInstantiablePlugins.elementAt(pluginIndex).getSupportedPaletteFileTypesAsString() + ")!";
 				
-				JOptionPane.showMessageDialog(m_frame, "Failed to create instance of export file: \"" + loadedInstantiablePlugins.elementAt(pluginIndex).getName() + " (" + loadedInstantiablePlugins.elementAt(pluginIndex).getSupportedPaletteFileTypesAsString() + ")!", "Instantiation Failed", JOptionPane.ERROR_MESSAGE);
+				SystemConsole.instance.writeLine(message);
+				
+				JOptionPane.showMessageDialog(m_frame, message, "Instantiation Failed", JOptionPane.ERROR_MESSAGE);
 				
 				return false;
 			}
 			
 			if(!palettePanel.updatePaletteData()) {
-				PaletteEditor.console.writeLine("Failed to update palette data for source palette while attempting to export file: \"" + palette.getFile().getName() + "!");
+				String message = "Failed to update palette data for source palette while attempting to export file: \"" + palette.getFile().getName() + "!";
 				
-				JOptionPane.showMessageDialog(m_frame, "Failed to update palette data for source palette while attempting to export file: \"" + palette.getFile().getName() + "!", "Update Palette Failed", JOptionPane.ERROR_MESSAGE);
+				SystemConsole.instance.writeLine(message);
+				
+				JOptionPane.showMessageDialog(m_frame, message, "Update Palette Failed", JOptionPane.ERROR_MESSAGE);
 				
 				return false;
 			}
 			newPalette.updateColourData(palette.getColourData(currentPaletteIndex));
 			try {
 				if(newPalette.save()) {
-					PaletteEditor.console.writeLine("Palette successfully exported to new file: " + newPalette.getFile().getName() + "!");
+					SystemConsole.instance.writeLine("Palette successfully exported to new file: " + newPalette.getFile().getName() + "!");
 					
 					numberOfPalettesExported++;
 				}
 				else {
-					PaletteEditor.console.writeLine("Failed to export palette!");
+					String message = "Failed to export palette!";
 					
-					JOptionPane.showMessageDialog(m_frame, "Failed to export palette!", "Export Failed", JOptionPane.ERROR_MESSAGE);
+					SystemConsole.instance.writeLine(message);
+					
+					JOptionPane.showMessageDialog(m_frame, message, "Export Failed", JOptionPane.ERROR_MESSAGE);
 					
 					return false;
 				}
 			}
 			catch(PaletteWriteException e) {
-				PaletteEditor.console.writeLine(e.getMessage());
+				SystemConsole.instance.writeLine(e.getMessage());
 				
 				return false;
 			}
@@ -1013,7 +1049,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		}
 		
 		if(numberOfPalettesExported > 1) {
-			PaletteEditor.console.writeLine("Successfully exported " + numberOfPalettesExported + " sub-palettes from palette: \"" + palette.getFile().getName() + "\".");
+			SystemConsole.instance.writeLine("Successfully exported " + numberOfPalettesExported + " sub-palettes from palette: \"" + palette.getFile().getName() + "\".");
 		}
 		
 		return true;
@@ -1068,11 +1104,11 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 	}
 	
 	private void updateWindow() {
-		m_settingsAutoScrollConsoleMenuItem.setSelected(PaletteEditor.settings.autoScrollConsole);
-		m_settingsLogConsoleMenuItem.setSelected(PaletteEditor.settings.logConsole);
-		m_settingsSupressUpdatesMenuItem.setSelected(PaletteEditor.settings.supressUpdates);
-		m_pluginsAutoLoadMenuItem.setSelected(PaletteEditor.settings.autoLoadPlugins);
-		m_settingsAutoSaveSettingsMenuItem.setSelected(PaletteEditor.settings.autoSaveSettings);
+		m_settingsAutoScrollConsoleMenuItem.setSelected(SettingsManager.instance.autoScrollConsole);
+		m_settingsLogConsoleMenuItem.setSelected(SettingsManager.instance.logConsole);
+		m_settingsSupressUpdatesMenuItem.setSelected(SettingsManager.instance.supressUpdates);
+		m_pluginsAutoLoadMenuItem.setSelected(SettingsManager.instance.autoLoadPlugins);
+		m_settingsAutoSaveSettingsMenuItem.setSelected(SettingsManager.instance.autoSaveSettings);
 		
 		boolean paletteTabSelected = m_mainTabbedPane.getSelectedIndex() != m_mainTabbedPane.getTabCount() - 1;
 		m_fileSaveMenuItem.setEnabled(paletteTabSelected);
@@ -1112,9 +1148,9 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		if(!m_initialized) { return; }
 		
 		// update and automatically scroll to the end of the text
-		m_consoleText.setText(PaletteEditor.console.toString());
+		m_consoleText.setText(SystemConsole.instance.toString());
 		
-		if(PaletteEditor.settings.autoScrollConsole) {
+		if(SettingsManager.instance.autoScrollConsole) {
 			JScrollBar hScrollBar = m_consoleScrollPane.getHorizontalScrollBar();
 			JScrollBar vScrollBar = m_consoleScrollPane.getVerticalScrollBar();
 			
@@ -1132,31 +1168,31 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 	}
 	
 	public void changeBackgroundColourPrompt() {
-		Color newColour = JColorChooser.showDialog(null, "Choose background colour", PaletteEditor.settings.backgroundColour);
+		Color newColour = JColorChooser.showDialog(null, "Choose background colour", SettingsManager.instance.backgroundColour);
 		if(newColour == null) { return; }
 		
-		PaletteEditor.settings.backgroundColour = newColour;
+		SettingsManager.instance.backgroundColour = newColour;
 		
 		update();
 	}
 	
 	public void resetWindowPosition() {
-		PaletteEditor.settings.windowPositionX = SettingsManager.defaultWindowPositionX;
-		PaletteEditor.settings.windowPositionY = SettingsManager.defaultWindowPositionY;
+		SettingsManager.instance.windowPositionX = SettingsManager.defaultWindowPositionX;
+		SettingsManager.instance.windowPositionY = SettingsManager.defaultWindowPositionY;
 		
-		m_frame.setLocation(PaletteEditor.settings.windowPositionX, PaletteEditor.settings.windowPositionY);
+		m_frame.setLocation(SettingsManager.instance.windowPositionX, SettingsManager.instance.windowPositionY);
 	}
 	
 	public void resetWindowSize() {
-		PaletteEditor.settings.windowWidth = SettingsManager.defaultWindowWidth;
-		PaletteEditor.settings.windowHeight = SettingsManager.defaultWindowHeight;
+		SettingsManager.instance.windowWidth = SettingsManager.defaultWindowWidth;
+		SettingsManager.instance.windowHeight = SettingsManager.defaultWindowHeight;
 		
-		m_frame.setSize(PaletteEditor.settings.windowWidth, PaletteEditor.settings.windowHeight);
+		m_frame.setSize(SettingsManager.instance.windowWidth, SettingsManager.instance.windowHeight);
 	}
 	
 	public void changePixelButtonSizePrompt() {
 		// prompt for pixel button size
-		String input = JOptionPane.showInputDialog(m_frame, "Please enter the desired pixel button size:", PaletteEditor.settings.pixelButtonSize);
+		String input = JOptionPane.showInputDialog(m_frame, "Please enter the desired pixel button size:", SettingsManager.instance.pixelButtonSize);
 		if(input == null) { return; }
 		
 		// set the new pixel button size
@@ -1170,20 +1206,20 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		}
 		
 		if(pixelButtonSize >= 1 && pixelButtonSize <= 64) {
-			PaletteEditor.console.writeLine("Pixel button size changed from " + PaletteEditor.settings.pixelButtonSize + " to " + pixelButtonSize + ".");
+			SystemConsole.instance.writeLine("Pixel button size changed from " + SettingsManager.instance.pixelButtonSize + " to " + pixelButtonSize + ".");
 			
-			PaletteEditor.settings.pixelButtonSize = pixelButtonSize;
+			SettingsManager.instance.pixelButtonSize = pixelButtonSize;
 			
 			update();
 		}
 		else {
-			PaletteEditor.console.writeLine("Pixel button size must be between 1 and 64.");
+			SystemConsole.instance.writeLine("Pixel button size must be between 1 and 64.");
 		}
 	}
 	
 	public void changePaletteSpacingPrompt() {
 		// prompt for palette spacing
-		String input = JOptionPane.showInputDialog(m_frame, "Please enter the distance for palette spacing:", PaletteEditor.settings.paletteSpacing);
+		String input = JOptionPane.showInputDialog(m_frame, "Please enter the distance for palette spacing:", SettingsManager.instance.paletteSpacing);
 		if(input == null) { return; }
 		
 		// set the new palette spacing
@@ -1197,14 +1233,14 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		}
 		
 		if(paletteSpacing >= 0 && paletteSpacing <= 128) {
-			PaletteEditor.console.writeLine("Palette spacing changed from " + PaletteEditor.settings.paletteSpacing + " to " + paletteSpacing + ".");
+			SystemConsole.instance.writeLine("Palette spacing changed from " + SettingsManager.instance.paletteSpacing + " to " + paletteSpacing + ".");
 			
-			PaletteEditor.settings.paletteSpacing = paletteSpacing;
+			SettingsManager.instance.paletteSpacing = paletteSpacing;
 			
 			update();
 		}
 		else {
-			PaletteEditor.console.writeLine("Palette spacing must be between 0 and 128.");
+			SystemConsole.instance.writeLine("Palette spacing must be between 0 and 128.");
 		}
 	}
 	
@@ -1267,54 +1303,54 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		// change the plugins folder name
 		else if(e.getSource() == m_settingsPluginDirectoryNameMenuItem) {
 			// prompt for the plugin directory name
-			String input = JOptionPane.showInputDialog(m_frame, "Please enter the plugin directory name:", PaletteEditor.settings.pluginDirectoryName);
+			String input = JOptionPane.showInputDialog(m_frame, "Please enter the plugin directory name:", SettingsManager.instance.pluginDirectoryName);
 			if(input == null) { return; }
 			
 			String newPluginDirectoryName = input.trim();
 			if(newPluginDirectoryName.length() == 0) { return; }
 			
-			if(!newPluginDirectoryName.equalsIgnoreCase(PaletteEditor.settings.pluginDirectoryName)) {
-				PaletteEditor.settings.pluginDirectoryName = newPluginDirectoryName;
+			if(!newPluginDirectoryName.equalsIgnoreCase(SettingsManager.instance.pluginDirectoryName)) {
+				SettingsManager.instance.pluginDirectoryName = newPluginDirectoryName;
 			}
 		}
 		// change the console log file name
 		else if(e.getSource() == m_settingsConsoleLogFileNameMenuItem) {
 			// prompt for the console log file name
-			String input = JOptionPane.showInputDialog(m_frame, "Please enter the console log file name:", PaletteEditor.settings.consoleLogFileName);
+			String input = JOptionPane.showInputDialog(m_frame, "Please enter the console log file name:", SettingsManager.instance.consoleLogFileName);
 			if(input == null) { return; }
 			
 			String newConsoleLogFileName = input.trim();
 			if(newConsoleLogFileName.length() == 0) { return; }
 			
-			if(!newConsoleLogFileName.equalsIgnoreCase(PaletteEditor.settings.consoleLogFileName)) {
-				PaletteEditor.console.resetConsoleLogFileHeader();
+			if(!newConsoleLogFileName.equalsIgnoreCase(SettingsManager.instance.consoleLogFileName)) {
+				SystemConsole.instance.resetConsoleLogFileHeader();
 				
-				PaletteEditor.settings.consoleLogFileName = newConsoleLogFileName;
+				SettingsManager.instance.consoleLogFileName = newConsoleLogFileName;
 			}
 		}
 		// change the log directory name
 		else if(e.getSource() == m_settingsLogDirectoryNameMenuItem) {
 			// prompt for the log directory name
-			String input = JOptionPane.showInputDialog(m_frame, "Please enter the log directory name:", PaletteEditor.settings.logDirectoryName);
+			String input = JOptionPane.showInputDialog(m_frame, "Please enter the log directory name:", SettingsManager.instance.logDirectoryName);
 			if(input == null) { return; }
 			
 			String newLogDirectoryName = input.trim();
 			if(newLogDirectoryName.length() == 0) { return; }
 			
-			if(!newLogDirectoryName.equalsIgnoreCase(PaletteEditor.settings.logDirectoryName)) {
-				PaletteEditor.settings.logDirectoryName = newLogDirectoryName;
+			if(!newLogDirectoryName.equalsIgnoreCase(SettingsManager.instance.logDirectoryName)) {
+				SettingsManager.instance.logDirectoryName = newLogDirectoryName;
 			}
 		}
 		else if(e.getSource() == m_settingsVersionFileURLMenuItem) {
 			// prompt for the version file url
-			String input = JOptionPane.showInputDialog(m_frame, "Please enter the version file URL:", PaletteEditor.settings.versionFileURL);
+			String input = JOptionPane.showInputDialog(m_frame, "Please enter the version file URL:", SettingsManager.instance.versionFileURL);
 			if(input == null) { return; }
 			
 			String newVersionFileURL = input.trim();
 			if(newVersionFileURL.length() == 0) { return; }
 			
-			if(!newVersionFileURL.equalsIgnoreCase(PaletteEditor.settings.versionFileURL)) {
-				PaletteEditor.settings.versionFileURL = newVersionFileURL;
+			if(!newVersionFileURL.equalsIgnoreCase(SettingsManager.instance.versionFileURL)) {
+				SettingsManager.instance.versionFileURL = newVersionFileURL;
 			}
 		}
 		else if(e.getSource() == m_settingsBackgroundColourMenuItem) {
@@ -1322,12 +1358,12 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		}
 		// change the console auto scrolling
 		else if(e.getSource() == m_settingsAutoScrollConsoleMenuItem) {
-			PaletteEditor.settings.autoScrollConsole = m_settingsAutoScrollConsoleMenuItem.isSelected();
+			SettingsManager.instance.autoScrollConsole = m_settingsAutoScrollConsoleMenuItem.isSelected();
 		}
 		// change the maximum number of elements the console can hold
 		else if(e.getSource() == m_settingsMaxConsoleHistoryMenuItem) {
 			// prompt for the maximum console history size
-			String input = JOptionPane.showInputDialog(m_frame, "Please enter the maximum console history size:", PaletteEditor.settings.maxConsoleHistory);
+			String input = JOptionPane.showInputDialog(m_frame, "Please enter the maximum console history size:", SettingsManager.instance.maxConsoleHistory);
 			if(input == null) { return; }
 			
 			// set the new console history size
@@ -1341,55 +1377,63 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			}
 			
 			if(maxConsoleHistory > 1) {
-				PaletteEditor.settings.maxConsoleHistory = maxConsoleHistory;
+				SettingsManager.instance.maxConsoleHistory = maxConsoleHistory;
 			}
 		}
 		// change console logging
 		else if(e.getSource() == m_settingsLogConsoleMenuItem) {
-			PaletteEditor.settings.logConsole = m_settingsLogConsoleMenuItem.isSelected();
+			SettingsManager.instance.logConsole = m_settingsLogConsoleMenuItem.isSelected();
 		}
 		// change update notification supressing
 		else if(e.getSource() == m_settingsSupressUpdatesMenuItem) {
-			PaletteEditor.settings.supressUpdates = m_settingsSupressUpdatesMenuItem.isSelected();
+			SettingsManager.instance.supressUpdates = m_settingsSupressUpdatesMenuItem.isSelected();
 		}
 		else if(e.getSource() == m_settingsAutoSaveSettingsMenuItem) {
-			PaletteEditor.settings.autoSaveSettings = m_settingsAutoSaveSettingsMenuItem.isSelected();
+			SettingsManager.instance.autoSaveSettings = m_settingsAutoSaveSettingsMenuItem.isSelected();
 		}
 		else if(e.getSource() == m_settingsSaveSettingsMenuItem) {
-			if(PaletteEditor.settings.save()) {
-				PaletteEditor.console.writeLine("Successfully saved settings to file: " + PaletteEditor.settings.settingsFileName);
+			if(SettingsManager.instance.save()) {
+				String message = "Successfully saved settings to file: " + SettingsManager.instance.settingsFileName;
 				
-				JOptionPane.showMessageDialog(m_frame, "Successfully saved settings to file: " + PaletteEditor.settings.settingsFileName, "Settings Saved", JOptionPane.INFORMATION_MESSAGE);
+				SystemConsole.instance.writeLine(message);
+				
+				JOptionPane.showMessageDialog(m_frame, message, "Settings Saved", JOptionPane.INFORMATION_MESSAGE);
 			}
 			else {
-				PaletteEditor.console.writeLine("Failed to save settings to file: " + PaletteEditor.settings.settingsFileName);
+				String message = "Failed to save settings to file: " + SettingsManager.instance.settingsFileName;
 				
-				JOptionPane.showMessageDialog(m_frame, "Failed to save settings to file: " + PaletteEditor.settings.settingsFileName, "Settings Not Saved", JOptionPane.ERROR_MESSAGE);
+				SystemConsole.instance.writeLine(message);
+				
+				JOptionPane.showMessageDialog(m_frame, message, "Settings Not Saved", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 		else if(e.getSource() == m_settingsReloadSettingsMenuItem) {
-			if(PaletteEditor.settings.load()) {
+			if(SettingsManager.instance.load()) {
 				update();
 				
-				PaletteEditor.console.writeLine("Settings successfully loaded from file: " + PaletteEditor.settings.settingsFileName);
+				String message = "Settings successfully loaded from file: " + SettingsManager.instance.settingsFileName;
 				
-				JOptionPane.showMessageDialog(m_frame, "Settings successfully loaded from file: " + PaletteEditor.settings.settingsFileName, "Settings Loaded", JOptionPane.INFORMATION_MESSAGE);
+				SystemConsole.instance.writeLine(message);
+				
+				JOptionPane.showMessageDialog(m_frame, message, "Settings Loaded", JOptionPane.INFORMATION_MESSAGE);
 			}
 			else {
-				PaletteEditor.console.writeLine("Failed to load settings from file: " + PaletteEditor.settings.settingsFileName);
+				String message = "Failed to load settings from file: " + SettingsManager.instance.settingsFileName;
 				
-				JOptionPane.showMessageDialog(m_frame, "Failed to load settings from file: " + PaletteEditor.settings.settingsFileName, "Settings Not Loaded", JOptionPane.ERROR_MESSAGE);
+				SystemConsole.instance.writeLine(message);
+				
+				JOptionPane.showMessageDialog(m_frame, message, "Settings Not Loaded", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 		else if(e.getSource() == m_settingsResetSettingsMenuItem) {
 			int choice = JOptionPane.showConfirmDialog(m_frame, "Are you sure you wish to reset all settings?", "Reset All Settings", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 			
 			if(choice == JOptionPane.YES_OPTION) {
-				PaletteEditor.settings.reset();
+				SettingsManager.instance.reset();
 				
 				update();
 				
-				PaletteEditor.console.writeLine("All settings reset to default values");
+				SystemConsole.instance.writeLine("All settings reset to default values");
 			}
 		}
 		// display a list of loaded plugins
@@ -1406,7 +1450,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		}
 		// toggle auto-loading of plugins
 		else if(e.getSource() == m_pluginsAutoLoadMenuItem) {
-			PaletteEditor.settings.autoLoadPlugins = m_pluginsAutoLoadMenuItem.isSelected();
+			SettingsManager.instance.autoLoadPlugins = m_pluginsAutoLoadMenuItem.isSelected();
 			
 			update();
 		}
@@ -1497,10 +1541,10 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		// reset initialization variables
 		m_initialized = false;
 		
-		PaletteEditor.settings.windowPositionX = m_frame.getX();
-		PaletteEditor.settings.windowPositionY = m_frame.getY();
-		PaletteEditor.settings.windowWidth = m_frame.getWidth();
-		PaletteEditor.settings.windowHeight = m_frame.getHeight();
+		SettingsManager.instance.windowPositionX = m_frame.getX();
+		SettingsManager.instance.windowPositionY = m_frame.getY();
+		SettingsManager.instance.windowWidth = m_frame.getWidth();
+		SettingsManager.instance.windowHeight = m_frame.getHeight();
 		
 		// close the server
 		PaletteEditor.instance.close();

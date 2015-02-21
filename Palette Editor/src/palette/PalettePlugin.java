@@ -719,7 +719,7 @@ public class PalettePlugin {
 				input = in.readLine();
 				if(input == null) {
 					in.close();
-					throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" incomplete or corrupted, no jar file name found.");
+					throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" incomplete or corrupted, no palette class name found.");
 				}
 				temp = input.trim();
 				if(temp.length() == 0) { continue; }
@@ -727,18 +727,18 @@ public class PalettePlugin {
 				v = Variable.parseFrom(temp);
 				if(v == null) {
 					in.close();
-					throw new PalettePluginLoadException("Failed to parse palette plugin jar file name in palette definition file: \"" + file.getName() + "\".");
+					throw new PalettePluginLoadException("Failed to parse palette class name in palette definition file: \"" + file.getName() + "\".");
 				}
 				
 				if(!v.getID().equalsIgnoreCase("Palette Class Name")) {
 					in.close();
-					throw new PalettePluginLoadException("Expected palette plugin jar file name variable, found \"" + v.getID() + "\" instead, in palette definition file: \"" + file.getName() + "\".");
+					throw new PalettePluginLoadException("Expected palette class file name variable, found \"" + v.getID() + "\" instead, in palette definition file: \"" + file.getName() + "\".");
 				}
 				
 				palettePlugin.m_paletteClassName = v.getValue();
 				if(palettePlugin.m_paletteClassName.length() == 0) {
 					in.close();
-					throw new PalettePluginLoadException("Empty palette plugin jar file name found in palette definition file: \"" + file.getName() + "\".");
+					throw new PalettePluginLoadException("Empty palette class name found in palette definition file: \"" + file.getName() + "\".");
 				}
 				
 				break;
