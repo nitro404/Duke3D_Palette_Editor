@@ -595,7 +595,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			}
 		}
 		catch(HeadlessException e) {
-			String message = "Exception thrown while loading palette : \"" + file.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + "): " + e.getMessage();
+			String message = "Exception thrown while loading palette: \"" + file.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + "): " + e.getMessage();
 			
 			SystemConsole.instance.writeLine(message);
 			
@@ -1438,15 +1438,15 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		}
 		// display a list of loaded plugins
 		else if(e.getSource() == m_pluginsListLoadedMenuItem) {
-			PaletteEditor.instance.displayLoadedPlugins();
+			PalettePluginManager.instance.displayLoadedPlugins();
 		}
 		// prompt for a plugin to load
 		else if(e.getSource() == m_pluginsLoadMenuItem) {
-			PaletteEditor.instance.loadPluginPrompt();
+			PalettePluginManager.instance.loadPluginPrompt();
 		}
 		// load all plugins
 		else if(e.getSource() == m_pluginsLoadAllMenuItem) {
-			PaletteEditor.instance.loadPlugins();
+			PalettePluginManager.instance.loadPlugins();
 		}
 		// toggle auto-loading of plugins
 		else if(e.getSource() == m_pluginsAutoLoadMenuItem) {
