@@ -1,6 +1,6 @@
 package exception;
 
-public class PalettePluginLoadException extends Exception {
+public class PalettePluginLoadException extends PluginLoadException {
 	
 	private static final long serialVersionUID = 9133136834466890721L;
 	

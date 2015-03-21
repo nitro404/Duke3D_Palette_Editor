@@ -6,12 +6,22 @@ import console.*;
 
 public class ExtendedClassLoader extends ClassLoader {
 	
+	public static ExtendedClassLoader instance = null;
+	
     public ExtendedClassLoader() {
     	this(ClassLoader.getSystemClassLoader());
     }
     
     public ExtendedClassLoader(ClassLoader parent) {
     	super(parent);
+    	
+    	if(instance == null) {
+    		updateInstance();
+    	}
+    }
+    
+    public void updateInstance() {
+    	instance = this;
     }
     
     // calls loadClass and links it to the class loader
@@ -21,22 +31,27 @@ public class ExtendedClassLoader extends ClassLoader {
     
     // checks if it can load the class through an alternative method, otherwise it calls findClass and does it by copying the raw data
     public Class<?> loadClass(String className, boolean resolve) throws ClassNotFoundException {
+    	if(className == null) { return null; }
+    	
+    	String formattedClassName = className.trim();
+    	if(formattedClassName.length() == 0) { return null; }
+    	
 		Class<?> c = null;
 	
 		// check to see if class is already loaded
-		c = findLoadedClass(className);
+		c = findLoadedClass(formattedClassName);
 		if(c != null) {
 		    return c;
 		}
 		
 		// check if class is in system class loader
-		c = findSystemClass(className);
+		c = findSystemClass(formattedClassName);
 		if(c != null) {
 		    return c;
 		}
 	
 		// otherwise, check if we can find it locally
-		c = findClass(className);
+		c = findClass(formattedClassName);
 		
 		return c;
     }
@@ -51,6 +66,8 @@ public class ExtendedClassLoader extends ClassLoader {
 		
 		// append .class to the name of the class (if it is not already present)
 		String path = className.trim();
+		if(path.length() == 0) { return null; }
+		
 		if(!Pattern.compile(".*\\.class$", Pattern.CASE_INSENSITIVE).matcher(path).matches()) {
 			path = path + ".class";
 		}
@@ -95,11 +112,14 @@ public class ExtendedClassLoader extends ClassLoader {
     public Class<?> deserializeClass(String className, byte[] classData, boolean resolve) {
     	if(className == null || classData == null || classData.length == 0) { return null; }
     	
+    	String formattedClassName = className.trim();
+    	if(formattedClassName.length() == 0) { return null; }
+    	
     	Class<?> c;
     	try {
     		// check if the class is already loaded, or available locally (and load it if so)
     		try {
-    			c = loadClass(className);
+    			c = loadClass(formattedClassName);
     		}
     		catch(ClassNotFoundException e) {
     			c = null;
@@ -107,9 +127,9 @@ public class ExtendedClassLoader extends ClassLoader {
 			
 			// if not, define the class
 			if(c == null) {
-				try { c = defineClass(className, classData, 0, classData.length); }
+				try { c = defineClass(formattedClassName, classData, 0, classData.length); }
 				catch(ClassFormatError e) {
-					SystemConsole.instance.writeLine("Class \"" + className + "\" is not properly formatted: " + e.getMessage() + " (Maybe try compressing the jar file?)");
+					SystemConsole.instance.writeLine("Class \"" + formattedClassName + "\" is not properly formatted: " + e.getMessage() + " (Maybe try compressing the jar file?)");
 					
 					return null;
 				}
@@ -121,7 +141,7 @@ public class ExtendedClassLoader extends ClassLoader {
     		}
     	}
     	catch(Exception e) {
-    		SystemConsole.instance.writeLine("Unexpected exception thrown while deserializing class \"" + className + "\": " + e.getMessage());
+    		SystemConsole.instance.writeLine("Unexpected exception thrown while deserializing class \"" + formattedClassName + "\": " + e.getMessage());
     		
     		return null;
     	}

@@ -44,7 +44,6 @@ public class PalettePanel extends JPanel implements Scrollable, ActionListener, 
 		setLayout(null);
 		setBackground(SettingsManager.defaultBackgroundColour);
 		
-		m_paletteNumber = PaletteEditor.getPaletteNumber();
 		m_dimensions = new Dimension(Palette.PALETTE_WIDTH * PixelButton.BUTTON_SIZE, Palette.PALETTE_HEIGHT * PixelButton.BUTTON_SIZE);
 		m_changed = false;
 		m_paletteChangeListeners = new Vector<PaletteChangeListener>();
@@ -55,6 +54,14 @@ public class PalettePanel extends JPanel implements Scrollable, ActionListener, 
 		initPopupMenu();
 		
 		addMouseListener(this);
+	}
+	
+	public boolean init() {
+		if(m_initialized) { return true; }
+		
+		m_initialized = true;
+		
+		return true;
 	}
 	
 	public void initPopupMenu() {
@@ -85,6 +92,10 @@ public class PalettePanel extends JPanel implements Scrollable, ActionListener, 
 	
 	public int getPaletteNumber() {
 		return m_paletteNumber;
+	}
+	
+	public void setPaletteNumber(int paletteNumber) {
+		m_paletteNumber = paletteNumber;
 	}
 	
 	public String getTabName() {
@@ -241,10 +252,7 @@ public class PalettePanel extends JPanel implements Scrollable, ActionListener, 
 			m_buttons = null;
 		}
 		
-		if(m_palette == null) {
-			m_initialized = false;
-		}
-		else {
+		if(m_palette != null) {
 			int numberOfPixels = Palette.NUMBER_OF_COLOURS * m_palette.numberOfPalettes();
 			int pixelIndex = 0;
 			m_buttons = new PixelButton[numberOfPixels];
@@ -258,8 +266,6 @@ public class PalettePanel extends JPanel implements Scrollable, ActionListener, 
 					}
 				}
 			}
-			
-			m_initialized = true;
 		}
 		
 		updateLayout();

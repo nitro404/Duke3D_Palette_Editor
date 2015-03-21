@@ -2,11 +2,11 @@ package palette;
 
 import java.io.*;
 import javax.swing.*;
-import gui.*;
 import utilities.*;
 import settings.*;
 import console.*;
 import version.*;
+import gui.*;
 
 public class PaletteEditor implements PaletteChangeListener {
 	
@@ -74,6 +74,12 @@ public class PaletteEditor implements PaletteChangeListener {
 			}
 		}
 		
+		if(!pluginManager.initialize(paletteEditorWindow.getFrame())) {
+			JOptionPane.showMessageDialog(paletteEditorWindow.getFrame(), "Failed to initialize plugin manager!", "Initialization Failed", JOptionPane.ERROR_MESSAGE);
+			
+			return false;
+		}
+		
 		if(settings.autoLoadPlugins) {
 			pluginManager.loadPlugins();
 		}
@@ -85,7 +91,7 @@ public class PaletteEditor implements PaletteChangeListener {
 		console.addTarget(paletteEditorWindow);
 		
 		if(!paletteEditorWindow.initialize()) {
-			JOptionPane.showMessageDialog(null, "Failed to initialize palette editor window!", "Palette Editor Init Failed", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(paletteEditorWindow.getFrame(), "Failed to initialize palette editor window!", "Palette Editor Init Failed", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
 		}

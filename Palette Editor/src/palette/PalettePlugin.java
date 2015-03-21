@@ -1,216 +1,179 @@
 package palette;
 
 import java.util.*;
-import java.util.regex.*;
-import java.util.jar.*;
 import java.io.*;
 import java.lang.reflect.*;
+import javax.xml.stream.*;
+import javax.xml.stream.events.*;
 import exception.*;
 import utilities.*;
+import console.*;
 import variable.*;
+import plugin.*;
+import gui.*;
 
-public class PalettePlugin {
+public class PalettePlugin extends Plugin {
 	
-	protected String m_name;
-	protected Vector<String> m_supportedPaletteFileTypes;
-	protected boolean m_instantiable;
-	protected double m_pluginVersion;
-	protected String m_directoryName;
-	protected String m_configFileName;
-	protected String m_jarFileName;
+	protected Vector<String> m_supportedPaletteFileFormats;
 	protected String m_paletteClassName;
+	protected String m_palettePanelClassName;
 	protected Class<?> m_paletteClass;
-	protected HashMap<String, Class<?>> m_classes;
-	protected boolean m_loaded;
+	protected Class<?> m_palettePanelClass;
 	
-	public static final String PALETTE_PLUGIN_DEFINITION_FILE_HEADER = "Palette Plugin Definition File";
-	public static final String PALETTE_PLUGIN_DEFINITION_FILE_VERSION = "1.0";
-	public static final String PLUGIN_VERSION = "1.0";
 	public static final String PLUGIN_TYPE = "Palette";
-	public static final String CONFIG_FILE_TYPES[] = new String[] { "CFG" };
 	
-	protected PalettePlugin(String configFileName, String directoryName) {
-		m_name = null;
-		m_supportedPaletteFileTypes = new Vector<String>();
-		m_instantiable = false;
-		m_pluginVersion = -1.0;
-		m_directoryName = directoryName == null ? null : directoryName.trim();
-		m_configFileName = configFileName == null ? null : configFileName.trim();
-		m_jarFileName = null;
+	public PalettePlugin(String pluginName, String pluginVersion, String jarFileName, String configFileName, String directoryName) {
+		super(pluginName, pluginVersion, jarFileName, configFileName, directoryName);
+		m_supportedPaletteFileFormats = new Vector<String>();
 		m_paletteClassName = null;
-		m_classes = new HashMap<String, Class<?>>();
-		m_loaded = false;
+		m_palettePanelClassName = null;
+		m_paletteClass = null;
+		m_palettePanelClass = null;
 	}
 	
-	public String getName() {
-		return m_name;
+	public String getType() {
+		return PLUGIN_TYPE;
 	}
 	
-	public double getPluginVersion() {
-		return m_pluginVersion;
+	public int numberOfSupportedPaletteFileFormats() {
+		return m_supportedPaletteFileFormats.size();
 	}
 	
-	public int numberOfSupportedPaletteFileTypes() {
-		return m_supportedPaletteFileTypes.size();
+	public String getSupportedPaletteFileFormat(int index) {
+		if(index < 0 || index >= m_supportedPaletteFileFormats.size()) { return null; }
+		return m_supportedPaletteFileFormats.elementAt(index);
 	}
 	
-	public String getSupportedPaletteFileType(int index) {
-		if(index < 0 || index >= m_supportedPaletteFileTypes.size()) { return null; }
-		return m_supportedPaletteFileTypes.elementAt(index);
-	}
-	
-	public String getSupportedPaletteFileTypesAsString() {
-		String listOfSupportedPaletteFileTypes = "";
+	public String getSupportedPaletteFileFormatsAsString() {
+		String listOfSupportedPaletteFileFormats = "";
 		
-		for(int i=0;i<m_supportedPaletteFileTypes.size();i++) {
-			listOfSupportedPaletteFileTypes += m_supportedPaletteFileTypes.elementAt(i);
+		for(int i=0;i<m_supportedPaletteFileFormats.size();i++) {
+			listOfSupportedPaletteFileFormats += m_supportedPaletteFileFormats.elementAt(i);
 			
-			if(i < m_supportedPaletteFileTypes.size() - 1) {
-				listOfSupportedPaletteFileTypes += ", ";
+			if(i < m_supportedPaletteFileFormats.size() - 1) {
+				listOfSupportedPaletteFileFormats += ", ";
 			}
 		}
 		
-		return listOfSupportedPaletteFileTypes;
+		return listOfSupportedPaletteFileFormats;
 	}
 	
-	public Vector<String> getSupportedPaletteFileTypes() {
-		return m_supportedPaletteFileTypes;
+	public Vector<String> getSupportedPaletteFileFormats() {
+		return m_supportedPaletteFileFormats;
 	}
 	
-	public boolean hasSupportedPaletteFileType(String fileType) {
-		if(fileType == null) { return false; }
-		String type = fileType.trim();
-		if(type.length() == 0) { return false; }
+	public boolean hasSupportedPaletteFileFormat(String fileFormat) {
+		if(fileFormat == null) { return false; }
+		String formattedfileFormat = fileFormat.trim();
+		if(formattedfileFormat.length() == 0) { return false; }
 		
-		for(int i=0;i<m_supportedPaletteFileTypes.size();i++) {
-			if(m_supportedPaletteFileTypes.elementAt(i).equalsIgnoreCase(type)) {
+		for(int i=0;i<m_supportedPaletteFileFormats.size();i++) {
+			if(m_supportedPaletteFileFormats.elementAt(i).equalsIgnoreCase(formattedfileFormat)) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	public boolean hasSharedSupportedPaletteFileType(PalettePlugin palettePlugin) {
+	public boolean hasSharedSupportedPaletteFileFormat(PalettePlugin palettePlugin) {
 		if(palettePlugin == null) { return false; }
 		
-		for(int i=0;i<palettePlugin.numberOfSupportedPaletteFileTypes();i++) {
-			if(hasSupportedPaletteFileType(palettePlugin.getSupportedPaletteFileType(i))) {
+		for(int i=0;i<palettePlugin.numberOfSupportedPaletteFileFormats();i++) {
+			if(hasSupportedPaletteFileFormat(palettePlugin.getSupportedPaletteFileFormat(i))) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	public int numberOfSharedSupportedPaletteFileTypes(PalettePlugin palettePlugin) {
+	public int numberOfSharedSupportedPaletteFileFormats(PalettePlugin palettePlugin) {
 		if(palettePlugin == null) { return 0; }
 		
-		int numberOfSharedSupportedPaletteFileTypes = 0;
-		for(int i=0;i<palettePlugin.numberOfSupportedPaletteFileTypes();i++) {
-			if(hasSupportedPaletteFileType(palettePlugin.getSupportedPaletteFileType(i))) {
-				numberOfSharedSupportedPaletteFileTypes++;
+		int numberOfSharedSupportedPaletteFileFormats = 0;
+		for(int i=0;i<palettePlugin.numberOfSupportedPaletteFileFormats();i++) {
+			if(hasSupportedPaletteFileFormat(palettePlugin.getSupportedPaletteFileFormat(i))) {
+				numberOfSharedSupportedPaletteFileFormats++;
 			}
 		}
-		return numberOfSharedSupportedPaletteFileTypes;
+		return numberOfSharedSupportedPaletteFileFormats;
 	}
 
-	public Vector<String> getSharedSupportedPaletteFileTypes(PalettePlugin palettePlugin) {
+	public Vector<String> getSharedSupportedPaletteFileFormats(PalettePlugin palettePlugin) {
 		if(palettePlugin == null) { return null; }
 		
-		Vector<String> sharedSupportedPaletteFileTypes = new Vector<String>();
-		for(int i=0;i<palettePlugin.numberOfSupportedPaletteFileTypes();i++) {
-			if(hasSupportedPaletteFileType(palettePlugin.getSupportedPaletteFileType(i))) {
-				sharedSupportedPaletteFileTypes.add(palettePlugin.getSupportedPaletteFileType(i));
+		Vector<String> sharedSupportedPaletteFileFormats = new Vector<String>();
+		for(int i=0;i<palettePlugin.numberOfSupportedPaletteFileFormats();i++) {
+			if(hasSupportedPaletteFileFormat(palettePlugin.getSupportedPaletteFileFormat(i))) {
+				sharedSupportedPaletteFileFormats.add(palettePlugin.getSupportedPaletteFileFormat(i));
 			}
 		}
-		return sharedSupportedPaletteFileTypes;
+		return sharedSupportedPaletteFileFormats;
 	}
 	
-	public String getSharedSupportedPaletteFileTypesAsString(PalettePlugin palettePlugin) {
+	public String getSharedSupportedPaletteFileFormatsAsString(PalettePlugin palettePlugin) {
 		if(palettePlugin == null) { return null; }
 		
-		String sharedSupportedPaletteFileTypes = new String();
-		for(int i=0;i<palettePlugin.numberOfSupportedPaletteFileTypes();i++) {
-			if(hasSupportedPaletteFileType(palettePlugin.getSupportedPaletteFileType(i))) {
-				if(sharedSupportedPaletteFileTypes.length() > 0) {
-					sharedSupportedPaletteFileTypes += ", ";
+		String sharedSupportedPaletteFileFormats = new String();
+		for(int i=0;i<palettePlugin.numberOfSupportedPaletteFileFormats();i++) {
+			if(hasSupportedPaletteFileFormat(palettePlugin.getSupportedPaletteFileFormat(i))) {
+				if(sharedSupportedPaletteFileFormats.length() > 0) {
+					sharedSupportedPaletteFileFormats += ", ";
 				}
 				
-				sharedSupportedPaletteFileTypes += palettePlugin.getSupportedPaletteFileType(i);
+				sharedSupportedPaletteFileFormats += palettePlugin.getSupportedPaletteFileFormat(i);
 			}
 		}
-		return sharedSupportedPaletteFileTypes;
+		return sharedSupportedPaletteFileFormats;
 	}
 	
-	public int indexOfSupportedPaletteFileType(String fileType) {
-		if(fileType == null) { return -1; }
-		String type = fileType.trim();
-		if(type.length() == 0) { return -1; }
+	public int indexOfSupportedPaletteFileFormat(String fileFormat) {
+		if(fileFormat == null) { return -1; }
+		String formattedFileFormat = fileFormat.trim();
+		if(formattedFileFormat.length() == 0) { return -1; }
 		
-		for(int i=0;i<m_supportedPaletteFileTypes.size();i++) {
-			if(m_supportedPaletteFileTypes.elementAt(i).equalsIgnoreCase(type)) {
+		for(int i=0;i<m_supportedPaletteFileFormats.size();i++) {
+			if(m_supportedPaletteFileFormats.elementAt(i).equalsIgnoreCase(formattedFileFormat)) {
 				return i;
 			}
 		}
 		return -1;
 	}
 	
-	public boolean addSupportedPaletteFileType(String fileType) {
-		if(fileType == null) { return false; }
-		String type = fileType.trim();
-		if(type.length() == 0) { return false; }
+	public boolean addSupportedPaletteFileFormat(String fileFormat) {
+		if(fileFormat == null) { return false; }
+		String formattedFileFormat = fileFormat.trim();
+		if(formattedFileFormat.length() == 0) { return false; }
 		
-		for(int i=0;i<m_supportedPaletteFileTypes.size();i++) {
-			if(m_supportedPaletteFileTypes.elementAt(i).equalsIgnoreCase(type)) {
+		for(int i=0;i<m_supportedPaletteFileFormats.size();i++) {
+			if(m_supportedPaletteFileFormats.elementAt(i).equalsIgnoreCase(formattedFileFormat)) {
 				return false;
 			}
 		}
 		
-		m_supportedPaletteFileTypes.add(type);
+		m_supportedPaletteFileFormats.add(formattedFileFormat);
 		
 		return true;
 	}
 	
-	public boolean isInstantiable() {
-		return m_instantiable;
-	}
-	
-	public String getDirectoryName() {
-		return m_directoryName;
-	}
-	
-	public String getConfigFileName() {
-		return m_configFileName;
-	}
-	
-	public boolean setConfigFileName(String configFileName) {
-		if(configFileName == null) { return false; }
-		String tempName = configFileName.trim();
-		if(tempName.length() == 0) { return false; }
-		
-		m_configFileName = configFileName;
-		
-		return true;
-	}
-	
-	public String getJarFileName() {
-		return m_jarFileName;
-	}
-
 	public String getPaletteClassName() {
 		return m_paletteClassName;
 	}
 	
-	public int numberOfClasses() {
-		return m_classes.size();
+	public String getPalettePanelClassName() {
+		return m_palettePanelClassName;
 	}
 	
-	public Class<?> getLoadedClass(String className) {
-		if(className == null) { return null; }
+	public Class<?> getPaletteClass() {
+		return m_paletteClass;
+	}
+	
+	public Class<?> getPalettePanelClass() {
+		return m_palettePanelClass;
+	}
+	
+	public Palette getNewPaletteInstance(File paletteFile) throws PaletteInstantiationException {
+		if(m_palettePanelClass == null) { return null; }
 		
-		return m_classes.get(className.replaceAll("[\\\\/]", ".").replaceAll("\\.[Cc][Ll][Aa][Ss][Ss]$", ""));
-	}
-	
-	public Palette getPaletteInstance(File paletteFile) throws PaletteInstantiationException {
 		Constructor<?> constructor = null;
 		try { constructor = m_paletteClass.getDeclaredConstructor(File.class); }
 		catch(Exception e) { }
@@ -230,590 +193,375 @@ public class PalettePlugin {
 		return newPalette;
 	}
 	
-	public boolean isLoaded() {
-		return m_loaded;
+	public PalettePanel getNewPalettePanelInstance(Palette palette) throws PalettePanelInstantiationException {
+		if(m_palettePanelClass == null) { return null; }
+		
+		Constructor<?> constructor = null;
+		try { constructor = m_palettePanelClass.getDeclaredConstructor(Palette.class); }
+		catch(Exception e) { }
+		
+		if(constructor == null) {
+			throw new PalettePanelInstantiationException("Palette panel class \"" + m_palettePanelClassName + "\" must contain a constructor which takes a Palette as an argument.");
+		}
+		
+		PalettePanel newPalettePanel = null;
+		try {
+			newPalettePanel = (PalettePanel) constructor.newInstance(palette);
+		}
+		catch(Exception e) {
+			throw new PalettePanelInstantiationException("Failed to instantiate palette panel class \"" + m_palettePanelClassName + "\": " + e.getMessage());
+		}
+		
+		return newPalettePanel;
 	}
 	
-	public boolean load() {
-		if(m_loaded) { return true; }
+	public static boolean isPalettePlugin(File file) {
+		return Plugin.isPluginOfType(file, PLUGIN_TYPE);
+	}
+	
+	protected boolean loadFromCFGFile(BufferedReader in) throws PluginLoadException {
+		if(in == null) { return false; }
 		
-		if(!loadClasses()) { return false; }
+		String input = null;
+		String line = null;
+		Variable v = null;
+		String supportedPaletteFileFormats = null;
+		String paletteClassName = null;
+		String palettePanelClassName = null;
 		
-		m_loaded = true;
+		try {
+			while(true) {
+				input = in.readLine();
+				if(input == null) {
+					try { in.close(); } catch(IOException e) { }
+					
+					throw new PalettePluginLoadException("Unexpected end of file encountered when reading \"" + m_name + "\" plugin definition file.");
+				}
+				
+				line = input.trim();
+				if(line.length() == 0 || Utilities.isComment(line)) { continue; }
+				
+				v = Variable.parseFrom(line);
+				if(v == null) { continue; }
+				
+				if(v.getID().equalsIgnoreCase("Supported Palette File Formats")) {
+					supportedPaletteFileFormats = v.getValue();
+					
+					String supportedPaletteFileFormat = null;
+					String supportedPaletteFileFormatList[] = supportedPaletteFileFormats.split("[;, \t]");
+					for(int i=0;i<supportedPaletteFileFormatList.length;i++) {
+						supportedPaletteFileFormat = supportedPaletteFileFormatList[i].trim();
+						if(supportedPaletteFileFormat.length() > 0) {
+							addSupportedPaletteFileFormat(supportedPaletteFileFormat);
+						}
+					}
+					
+					if(numberOfSupportedPaletteFileFormats() == 0) {
+						try { in.close(); } catch(IOException e) { }
+						
+						throw new PalettePluginLoadException("Palette plugin \"" + m_name + "\" must support at least one file format.");
+					}
+				}
+				else if(v.getID().equalsIgnoreCase("Palette Class Name")) {
+					if(paletteClassName != null) {
+						SystemConsole.instance.writeLine("Multiple entries found for palette class name in \"" + m_name + "\" plugin definition file.");
+					}
+					
+					paletteClassName = v.getValue();
+				}
+				else if(v.getID().equalsIgnoreCase("Palette Panel Class Name")) {
+					if(palettePanelClassName != null) {
+						SystemConsole.instance.writeLine("Multiple entries found for palette panel class name in \"" + m_name + "\" plugin definition file.");
+					}
+					
+					palettePanelClassName = v.getValue();
+				}
+				else {
+					SystemConsole.instance.writeLine("Encountered unexpected property \"" + v.getID() + "\" in \"" + m_name + "\" plugin definition file.");
+				}
+				
+				if(supportedPaletteFileFormats != null && paletteClassName != null && palettePanelClassName != null) {
+					break;
+				}
+			}
+		}
+		catch(IOException e) {
+			try { in.close(); } catch(IOException e2) { }
+			
+			throw new PalettePluginLoadException("Read exception thrown while reading \"" + m_name + "\" plugin definition file: " + e.getMessage());
+		}
+		
+		m_paletteClassName = paletteClassName;
+		m_palettePanelClassName = palettePanelClassName;
+		
+		m_paletteClass = null;
+		try { m_paletteClass = ExtendedClassLoader.instance.loadClass(m_paletteClassName); }
+		catch(ClassNotFoundException e) {
+			try { in.close(); } catch(IOException e2) { }
+			
+			throw new PalettePluginLoadException("Class " + m_paletteClassName + " is missing or not loaded.");
+		}
+		if(!(Palette.class.isAssignableFrom(m_paletteClass))) {
+			try { in.close(); } catch(IOException e) { }
+			
+			throw new PalettePluginLoadException("Class " + m_paletteClassName + " does not extend Palette class.");
+		}
+		
+		m_palettePanelClass = null;
+		try { m_palettePanelClass = ExtendedClassLoader.instance.loadClass(m_palettePanelClassName); }
+		catch(ClassNotFoundException e) {
+			try { in.close(); } catch(IOException e2) { }
+			
+			throw new PalettePluginLoadException("Class " + m_palettePanelClassName + " is missing or not loaded.");
+		}
+		if(!(PalettePanel.class.isAssignableFrom(m_palettePanelClass))) {
+			try { in.close(); } catch(IOException e) { }
+			
+			throw new PalettePluginLoadException("Class " + m_palettePanelClassName + " does not extend PalettePanel class.");
+		}
 		
 		return true;
 	}
 	
-	protected boolean loadClasses() {
-		if(m_loaded) { return true; }
-		if(m_jarFileName == null) { return false; }
+	protected boolean loadFromXMLFile(BufferedReader in, XMLEventReader eventReader) throws PluginLoadException {
+		if(in == null || eventReader == null) { return false; }
 		
-		InputStream in;
-		String name;
-		byte[] data;
-		JarFile jarFile = null;
-		JarEntry e;
-		Class<?> c;
-		
-		try {
-			jarFile = new JarFile(Utilities.appendSlash(PaletteEditor.settings.pluginDirectoryName) + Utilities.appendSlash(m_directoryName) + "/" + m_jarFileName);
-			
-			Pattern p = Pattern.compile(".*\\.class$", Pattern.CASE_INSENSITIVE);
-			
-			Enumeration<JarEntry> contents = jarFile.entries();
-			while(contents.hasMoreElements()) {
-				e = contents.nextElement();
-				if(p.matcher(e.getName()).matches()) {
-					in = jarFile.getInputStream(e);
-					if(in.available() < 1) {
-						jarFile.close();
-						
-						return false;
-					}
-					data = new byte[in.available()];
-					in.read(data);
-					
-					name = e.getName().replaceAll("[\\\\/]", ".").replaceAll("\\.[Cc][Ll][Aa][Ss][Ss]$", "");
-					
-					c = PaletteEditor.classLoader.deserializeClass(name, data);
-					if(c == null) {
-						jarFile.close();
-						
-						return false;
-					}
-					
-					m_classes.put(name, c);
-				}
-			}
-			
-			jarFile.close();
-			
-			return true;
-		}
-		catch(IOException e2) {
-			try { jarFile.close(); } catch(Exception e3) { }
-			return false;
-		}
-	}
-	
-	protected static String readPluginDefinitionFileVersion(BufferedReader in, File file) throws IOException, PalettePluginLoadException {
-		if(in == null || file == null) { return null; }
-		
-		String input, header;
-		while(true) {
-			input = in.readLine();
-			if(input == null) {
-				in.close();
-				throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" incomplete or corrupted, no header found.");
-			}
-			
-			header = input.trim();
-			if(header.length() == 0) { continue; }
-			
-			if(!header.matches("^.* ([0-9]\\.?)+$")) {
-				in.close();
-				throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" has an invalid header: \"" + header + "\".");
-			}
-			String[] headerData = new String[2];
-			int separatorIndex = header.lastIndexOf(' ');
-			if(separatorIndex < 0) {
-				in.close();
-				throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" is missing version number in header.");
-			}
-			headerData[0] = header.substring(0, separatorIndex);
-			headerData[1] = header.substring(separatorIndex + 1, header.length());
-			
-			if(!headerData[0].trim().equalsIgnoreCase(PALETTE_PLUGIN_DEFINITION_FILE_HEADER)) {
-				in.close();
-				throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" has an invalid header: \"" + headerData[0] + "\", expected \"" + PALETTE_PLUGIN_DEFINITION_FILE_HEADER + "\".");
-			}
-			
-			return headerData[1];
-		}
-	}
-	
-	protected static boolean verifyDefinitionFileVersion(String version) {
-		if(version == null) { return false; }
-		String cfgVersion = version.trim();
-		if(cfgVersion.length() == 0) { return false; }
-		
-		return Utilities.compareVersions(PALETTE_PLUGIN_DEFINITION_FILE_VERSION, cfgVersion) == 0;
-	}
-	
-	public static boolean isPalettePlugin(File file) throws PalettePluginLoadException {
-		if(file == null || !file.exists() || !file.isFile()) {
-			throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" is missing or invalid.");
-		}
-		
-		BufferedReader in = null;
-		try {
-			in = new BufferedReader(new FileReader(file));
-			
-			try {
-				if(!verifyDefinitionFileVersion(readPluginDefinitionFileVersion(in, file))) {
-					in.close();
-					
-					throw new PalettePluginLoadException("Unsupported plugin definition file version, only version " + PALETTE_PLUGIN_DEFINITION_FILE_VERSION + " is supported. Maybe check for updates, or verify your plugin definition files?");
-				}
-			}
-			catch(IllegalArgumentException e) {
-				in.close();
-				
-				throw new PalettePluginLoadException("Invalid plugin version specified in plugin definition file \"" + file.getName() + "\": " + e.getMessage());
-			}
-			
-			in.close();
-			
-			return true;
-		}
-		catch(FileNotFoundException e) {
-			throw new PalettePluginLoadException("Missing palette plugin definition file \"" + file.getName() + "\": " + e.getMessage());
-		}
-		catch(IOException e) {
-			throw new PalettePluginLoadException("Read exception thrown while parsing palette plugin definition file \"" + file.getName() + "\": " + e.getMessage());
-		}
-	}
-	
-	public static String getPalettePluginName(File file) throws PalettePluginLoadException {
-		if(file == null || !file.exists() || !file.isFile()) {
-			throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" is missing or invalid.");
-		}
-		
-		String input, temp;
-		Variable v;
-		String name = null;
-		BufferedReader in = null;
+		XMLEvent event = null;
+		String node = null;
+		Iterator<?> attributes = null;
+		Attribute attribute = null;
+		String attributeName = null;
+		String attributeValue = null;
+		String extension = null;
+		String className = null;
+		String classType = null;
+		String paletteClassName = null;
+		String palettePanelClassName = null;
 		
 		try {
-			in = new BufferedReader(new FileReader(file));
-			
-			try {
-				if(!verifyDefinitionFileVersion(readPluginDefinitionFileVersion(in, file))) {
-					in.close();
+			while(eventReader.hasNext()) {
+				event = eventReader.nextEvent();
+				
+				if(event.isStartElement()) {
+					node = event.asStartElement().getName().getLocalPart();
 					
-					throw new PalettePluginLoadException("Unsupported plugin definition file version, only version " + PALETTE_PLUGIN_DEFINITION_FILE_VERSION + " is supported. Maybe check for updates, or verify your plugin definition files?");
-				}
-			}
-			catch(IllegalArgumentException e) {
-				in.close();
-				
-				throw new PalettePluginLoadException("Invalid plugin version specified in plugin definition file \"" + file.getName() + "\": " + e.getMessage());
-			}
-			
-			while(true) {
-				input = in.readLine();
-				if(input == null) {
-					in.close();
-					throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" incomplete or corrupted, no plugin name found.");
-				}
-				temp = input.trim();
-				if(temp.length() == 0) { continue; }
-				
-				v = Variable.parseFrom(temp);
-				if(v == null) {
-					in.close();
-					throw new PalettePluginLoadException("Failed to parse palette plugin name variable in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				if(!v.getID().equalsIgnoreCase("Name")) {
-					in.close();
-					throw new PalettePluginLoadException("Expected palette plugin name variable, found \"" + v.getID() + "\" instead, in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				name = v.getValue();
-				if(name.length() == 0) {
-					in.close();
-					throw new PalettePluginLoadException("Invalid empty palette plugin name found in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				break;
-			}
-			
-			in.close();
-			
-			return name;
-		}
-		catch(FileNotFoundException e) {
-			throw new PalettePluginLoadException("Missing palette plugin definition file \"" + file.getName() + "\": " + e.getMessage());
-		}
-		catch(IOException e) {
-			throw new PalettePluginLoadException("Read exception thrown while parsing palette plugin definition file \"" + file.getName() + "\": " + e.getMessage());
-		}
-	}
-	
-	public static PalettePlugin loadFrom(File file) throws PalettePluginLoadException {
-		if(file == null || !file.exists() || !file.isFile()) {
-			throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" is missing or invalid.");
-		}
-		
-		PalettePlugin palettePlugin = null;
-		
-		String directoryName;
-		if(file.getPath().matches(".*[\\\\/].*")) {
-			directoryName = file.getPath().replaceAll("[\\\\/][^\\\\/]*$", "").replaceAll("^.*[\\\\/]", "");
-		}
-		else {
-			directoryName = "/";
-		}
-		
-		String fileExtension = Utilities.getFileExtension(file.getName());
-		
-		if(fileExtension.equalsIgnoreCase("cfg")) {
-			palettePlugin = loadFromCFGFile(file, directoryName);
-		}
-		else {
-			throw new PalettePluginLoadException("Unsupported palette plugin configuration file type: \"" + fileExtension + "\".");
-		}
-		
-		return palettePlugin;
-	}
-	
-	protected static PalettePlugin loadFromCFGFile(File file, String directory) throws PalettePluginLoadException {
-		if(file == null || !file.exists() || !file.isFile()) {
-			throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" is missing or invalid.");
-		}
-		if(directory == null) {
-			throw new PalettePluginLoadException("Palette plugin must have a non-null directory name.");
-		}
-		String directoryName = directory.trim();
-		if(directoryName.length() == 0) {
-			throw new PalettePluginLoadException("Palette plugin must have a non-empty directory name.");
-		}
-		
-		String input, temp;
-		BufferedReader in;
-		Variable v;
-		PalettePlugin palettePlugin = new PalettePlugin(file.getName(), directoryName);
-		try {
-			in = new BufferedReader(new FileReader(file));
-			
-			try {
-				if(!verifyDefinitionFileVersion(readPluginDefinitionFileVersion(in, file))) {
-					in.close();
-					
-					throw new PalettePluginLoadException("Unsupported plugin definition file version, only version " + PALETTE_PLUGIN_DEFINITION_FILE_VERSION + " is supported. Maybe check for updates, or verify your plugin definition files?");
-				}
-			}
-			catch(IllegalArgumentException e) {
-				in.close();
-				
-				throw new PalettePluginLoadException("Invalid plugin version specified in plugin definition file \"" + file.getName() + "\": " + e.getMessage());
-			}
-			
-			while(true) {
-				input = in.readLine();
-				if(input == null) {
-					in.close();
-					throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" incomplete or corrupted, no plugin version found.");
-				}
-				temp = input.trim();
-				if(temp.length() == 0) { continue; }
-				
-				v = Variable.parseFrom(temp);
-				if(v == null) {
-					in.close();
-					throw new PalettePluginLoadException("Failed to parse palette plugin version variable in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				if(!v.getID().equalsIgnoreCase("Plugin Version")) {
-					in.close();
-					throw new PalettePluginLoadException("Expected palette plugin version variable, found \"" + v.getID() + "\" instead, in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				String pluginVersionData = v.getValue();
-				if(pluginVersionData.length() == 0) {
-					in.close();
-					throw new PalettePluginLoadException("Empty palette plugin version found in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				try {
-					if(Utilities.compareVersions(PLUGIN_VERSION, pluginVersionData) != 0) {
-						in.close();
-						
-						throw new PalettePluginLoadException("Unsupported plugin version, only version " + PLUGIN_VERSION + " is supported. Maybe check for updates, or verify your config files?");
+					if(node.equalsIgnoreCase("formats")) {
+						while(eventReader.hasNext()) {
+							event = eventReader.nextEvent();
+							
+							if(event.isStartElement()) {
+								node = event.asStartElement().getName().getLocalPart();
+								
+								if(node.equalsIgnoreCase("format")) {
+									attributes = event.asStartElement().getAttributes();
+									
+									while(attributes.hasNext()) {
+										attribute = (Attribute) attributes.next();
+										
+										attributeName = attribute.getName().toString();
+										attributeValue = attribute.getValue().toString().trim();
+										
+										if(attributeName.equalsIgnoreCase("extension")) {
+											if(extension != null) {
+												SystemConsole.instance.writeLine("Attribute \"extension\" specified multiple times inside format XML node of plugin definition file for palette plugin \"" + m_name + "\".");
+											}
+											
+											extension = attributeValue;
+										}
+										else {
+											SystemConsole.instance.writeLine("Unexpected XML node attribute encounted inside format node: \"" + attributeName + "\", expected \"extension\"."); 
+										}
+									}
+								}
+								else {
+									SystemConsole.instance.writeLine("Unexpected XML node start tag encountered inside formats node: \"" + node + "\", expected \"format\".");
+								}
+							}
+							else if(event.isEndElement()) {
+								node = event.asEndElement().getName().getLocalPart();
+								
+								if(node.equalsIgnoreCase("format")) {
+									if(extension == null) {
+										SystemConsole.instance.writeLine("Missing \"extension\" attribute in format XML node of plugin definition file for palette plugin \"" + m_name + "\".");
+									}
+									else if(extension.length() == 0) {
+										SystemConsole.instance.writeLine("Encountered empty file extension in format XML node of plugin definition file for palette plugin \"" + m_name + "\".");
+									}
+									else {
+										addSupportedPaletteFileFormat(extension);
+										
+										extension = null;
+									}
+								}
+								else if(node.equalsIgnoreCase("formats")) {
+									break;
+								}
+								else {
+									SystemConsole.instance.writeLine("Unexpected XML node close tag encountered inside formats node: \"" + node + "\", expected \"format\" or \"formats\".");
+								}
+							}
+						}
+					}
+					else if(node.equalsIgnoreCase("classes")) {
+						while(eventReader.hasNext()) {
+							event = eventReader.nextEvent();
+							
+							if(event.isStartElement()) {
+								node = event.asStartElement().getName().getLocalPart();
+								
+								if(node.equalsIgnoreCase("class")) {
+									attributes = event.asStartElement().getAttributes();
+									
+									while(attributes.hasNext()) {
+										attribute = (Attribute) attributes.next();
+										
+										attributeName = attribute.getName().toString();
+										attributeValue = attribute.getValue().toString().trim();
+										
+										if(attributeName.equalsIgnoreCase("type")) {
+											if(classType != null) {
+												SystemConsole.instance.writeLine("Attribute \"type\" specified multiple times inside class XML node of plugin definition file for palette plugin \"" + m_name + "\".");
+											}
+											
+											classType = attributeValue;
+										}
+										else if(attributeName.equalsIgnoreCase("name")) {
+											if(className != null) {
+												SystemConsole.instance.writeLine("Attribute \"name\" specified multiple times inside class XML node of plugin definition file for palette plugin \"" + m_name + "\".");
+											}
+											
+											className = attributeValue;
+										}
+										else {
+											SystemConsole.instance.writeLine("Unexpected XML node attribute encounted inside class node: \"" + attributeName + "\", expected \"type\" or \"name\"."); 
+										}
+									}
+								}
+								else {
+									SystemConsole.instance.writeLine("Unexpected XML node start tag encountered inside classes node: \"" + node + "\", expected \"class\".");
+								}
+							}
+							else if(event.isEndElement()) {
+								node = event.asEndElement().getName().getLocalPart();
+								
+								if(node.equalsIgnoreCase("class")) {
+									if(classType == null || className == null) {
+										try { in.close(); } catch(IOException e) { }
+										
+										throw new PalettePluginLoadException("Missing attribute in class XML node, both \"type\" and \"name\" must be specified.");
+									}
+									else if(classType.equalsIgnoreCase("Palette")) {
+										if(paletteClassName != null) {
+											SystemConsole.instance.writeLine("Palette class specified multiple times inside classes XML node of plugin definition file for palette plugin \"" + m_name + "\".");
+										}
+										
+										paletteClassName = className;
+										
+										if(paletteClassName.length() == 0) {
+											try { in.close(); } catch (IOException e2) { }
+											
+											throw new PluginLoadException("Empty palette class name specified inside classes XML node of plugin definition file for palette plugin \"" + m_name + "\".");
+										}
+									}
+									else if(classType.equalsIgnoreCase("Palette Panel")) {
+										if(palettePanelClassName != null) {
+											SystemConsole.instance.writeLine("Palette panel class specified multiple times inside classes XML node of plugin definition file for palette plugin \"" + m_name + "\".");
+										}
+										
+										palettePanelClassName = className;
+										
+										if(palettePanelClassName.length() == 0) {
+											try { in.close(); } catch (IOException e2) { }
+											
+											throw new PluginLoadException("Empty palette panel class name specified inside classes XML node of plugin definition file for palette plugin \"" + m_name + "\".");
+										}
+									}
+									else {
+										SystemConsole.instance.writeLine("Unexpected class type encountered inside classes node: \"" + node + "\", expected \"Palette\" or \"Palette Panel\".");
+									}
+									
+									className = null;
+									classType = null;
+								}
+								else if(node.equalsIgnoreCase("classes")) {
+									break;
+								}
+								else {
+									SystemConsole.instance.writeLine("Unexpected XML node close tag encountered inside classes node: \"" + node + "\", expected \"class\" or \"classes\".");
+								}
+							}
+						}
+					}
+					else {
+						SystemConsole.instance.writeLine("Unexpected XML node start tag encountered inside plugin node: \"" + node + "\", expected \"formats\" or \"classes\".");
 					}
 				}
-				catch(IllegalArgumentException e) {
-					in.close();
+				else if(event.isEndElement()) {
+					node = event.asEndElement().getName().getLocalPart();
 					
-					throw new PalettePluginLoadException("Invalid plugin version specified in plugin definition file \"" + file.getName() + "\": " + e.getMessage());
-				}
-				
-				break;
-			}
-			
-			while(true) {
-				input = in.readLine();
-				if(input == null) {
-					in.close();
-					throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" incomplete or corrupted, no plugin type found.");
-				}
-				temp = input.trim();
-				if(temp.length() == 0) { continue; }
-				
-				v = Variable.parseFrom(temp);
-				if(v == null) {
-					in.close();
-					throw new PalettePluginLoadException("Failed to parse palette plugin type variable in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				if(!v.getID().equalsIgnoreCase("Plugin Type")) {
-					in.close();
-					throw new PalettePluginLoadException("Expected palette plugin type variable, found \"" + v.getID() + "\" instead, in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				String pluginType = v.getValue();
-				if(pluginType.length() == 0) {
-					in.close();
-					throw new PalettePluginLoadException("Empty plugin type found in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				if(!pluginType.equalsIgnoreCase(PLUGIN_TYPE)) {
-					in.close();
-					throw new PalettePluginLoadException("Unsupported plugin type \"" + pluginType + "\" found in palette definition file: \"" + file.getName() + "\", only type " + PLUGIN_TYPE + " is supported.");
-				}
-				
-				break;
-			}
-			
-			while(true) {
-				input = in.readLine();
-				if(input == null) {
-					in.close();
-					throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" incomplete or corrupted, no plugin name found.");
-				}
-				temp = input.trim();
-				if(temp.length() == 0) { continue; }
-				
-				v = Variable.parseFrom(temp);
-				if(v == null) {
-					in.close();
-					throw new PalettePluginLoadException("Failed to parse palette plugin name variable in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				if(!v.getID().equalsIgnoreCase("Plugin Name")) {
-					in.close();
-					throw new PalettePluginLoadException("Expected palette plugin name variable, found \"" + v.getID() + "\" instead, in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				palettePlugin.m_name = v.getValue();
-				if(palettePlugin.m_name.length() == 0) {
-					in.close();
-					throw new PalettePluginLoadException("Empty palette plugin name found in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				break;
-			}
-			
-			while(true) {
-				input = in.readLine();
-				if(input == null) {
-					in.close();
-					throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" incomplete or corrupted, no suppported palette file type list found.");
-				}
-				temp = input.trim();
-				if(temp.length() == 0) { continue; }
-				
-				v = Variable.parseFrom(temp);
-				if(v == null) {
-					in.close();
-					throw new PalettePluginLoadException("Failed to parse suppported palette file type list variable in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				if(!v.getID().equalsIgnoreCase("Supported Palette File Types")) {
-					in.close();
-					throw new PalettePluginLoadException("Expected suppported palette file type list variable, found \"" + v.getID() + "\" instead, in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				String supportedPaletteFileTypes = v.getValue();
-				if(supportedPaletteFileTypes.length() == 0) {
-					in.close();
-					throw new PalettePluginLoadException("Empty supported palette file type list found in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				String supportedPaletteFileType = null;
-				String supportedPaletteFileTypeList[] = supportedPaletteFileTypes.split("[;, \t]");
-				for(int i=0;i<supportedPaletteFileTypeList.length;i++) {
-					supportedPaletteFileType = supportedPaletteFileTypeList[i].trim();
-					if(supportedPaletteFileType.length() > 0) {
-						palettePlugin.addSupportedPaletteFileType(supportedPaletteFileType);
+					if(node.equalsIgnoreCase("plugin")) {
+						break;
+					}
+					else {
+						SystemConsole.instance.writeLine("Unexpected XML node close tag encountered: \"" + node + "\", expected \"plugin\".");
 					}
 				}
-				
-				if(palettePlugin.numberOfSupportedPaletteFileTypes() == 0) {
-					throw new PalettePluginLoadException("Palette plugin \"" + palettePlugin.getName() + "\" in palette definition file: \"" + file.getName() + "\" must support at least one file type.");
-				}
-				
-				break;
 			}
+		}
+		catch(XMLStreamException e) {
+			try { in.close(); } catch (IOException e2) { }
 			
-			while(true) {
-				input = in.readLine();
-				if(input == null) {
-					in.close();
-					throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" incomplete or corrupted, no instantiable property found.");
-				}
-				temp = input.trim();
-				if(temp.length() == 0) { continue; }
-				
-				v = Variable.parseFrom(temp);
-				if(v == null) {
-					in.close();
-					throw new PalettePluginLoadException("Failed to parse palette instantiable property in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				if(!v.getID().equalsIgnoreCase("Instantiable")) {
-					in.close();
-					throw new PalettePluginLoadException("Expected palette instantiable variable, found \"" + v.getID() + "\" instead, in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				String instantiable = v.getValue();
-				if(instantiable.length() == 0) {
-					in.close();
-					throw new PalettePluginLoadException("Empty palette instantiable property found in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				if(instantiable.equalsIgnoreCase("true") || instantiable.equalsIgnoreCase("1") || instantiable.equalsIgnoreCase("yes") || instantiable.equalsIgnoreCase("enabled")) {
-					palettePlugin.m_instantiable = true;
-				}
-				else if(instantiable.equalsIgnoreCase("false") || instantiable.equalsIgnoreCase("0") || instantiable.equalsIgnoreCase("no") || instantiable.equalsIgnoreCase("disabled")) {
-					palettePlugin.m_instantiable = false;
-				}
-				else {
-					throw new PalettePluginLoadException("Invalid palette instantiable property value found in palette definition file: \"" + file.getName() + "\", espected one of: true, false, 1, 0, yes, no, enabled, disabled.");
-				}
-				
-				break;
-			}
+			throw new PluginLoadException("XML exception thrown while reading plugin definition file: " + e.getMessage());
+		}
+		
+		if(numberOfSupportedPaletteFileFormats() == 0) {
+			try { in.close(); } catch(IOException e) { }
 			
-			while(true) {
-				input = in.readLine();
-				if(input == null) {
-					in.close();
-					throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" incomplete or corrupted, no jar file name found.");
-				}
-				temp = input.trim();
-				if(temp.length() == 0) { continue; }
-				
-				v = Variable.parseFrom(temp);
-				if(v == null) {
-					in.close();
-					throw new PalettePluginLoadException("Failed to parse palette plugin jar file name in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				if(!v.getID().equalsIgnoreCase("Plugin Jar File Name")) {
-					in.close();
-					throw new PalettePluginLoadException("Expected palette plugin jar file name variable, found \"" + v.getID() + "\" instead, in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				palettePlugin.m_jarFileName = v.getValue();
-				if(palettePlugin.m_jarFileName.length() == 0) {
-					in.close();
-					throw new PalettePluginLoadException("Empty palette plugin jar file name found in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				break;
-			}
+			throw new PalettePluginLoadException("Palette plugin \"" + m_name + "\" must support at least one file format.");
+		}
+		
+		if(paletteClassName == null) {
+			try { in.close(); } catch(IOException e) { }
 			
-			while(true) {
-				input = in.readLine();
-				if(input == null) {
-					in.close();
-					throw new PalettePluginLoadException("Palette plugin definition file \"" + file.getName() + "\" incomplete or corrupted, no palette class name found.");
-				}
-				temp = input.trim();
-				if(temp.length() == 0) { continue; }
-				
-				v = Variable.parseFrom(temp);
-				if(v == null) {
-					in.close();
-					throw new PalettePluginLoadException("Failed to parse palette class name in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				if(!v.getID().equalsIgnoreCase("Palette Class Name")) {
-					in.close();
-					throw new PalettePluginLoadException("Expected palette class file name variable, found \"" + v.getID() + "\" instead, in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				palettePlugin.m_paletteClassName = v.getValue();
-				if(palettePlugin.m_paletteClassName.length() == 0) {
-					in.close();
-					throw new PalettePluginLoadException("Empty palette class name found in palette definition file: \"" + file.getName() + "\".");
-				}
-				
-				break;
-			}
+			throw new PalettePluginLoadException("Palette plugin \"" + m_name + "\" missing palette class name specification in plugin definition file.");
+		}
+		
+		if(palettePanelClassName == null) {
+			try { in.close(); } catch(IOException e) { }
 			
-			in.close();
-		}
-		catch(FileNotFoundException e) {
-			throw new PalettePluginLoadException("Missing palette plugin definition file \"" + file.getName() + "\": " + e.getMessage());
-		}
-		catch(IOException e) {
-			throw new PalettePluginLoadException("Read exception thrown while parsing palette plugin definition file \"" + file.getName() + "\": " + e.getMessage());
+			throw new PalettePluginLoadException("Palette plugin \"" + m_name + "\" missing palette panel class name specification in plugin definition file.");
 		}
 		
-		if(!palettePlugin.load()) {
-			throw new PalettePluginLoadException("Failed to load palette plugin \"" + palettePlugin.m_jarFileName + "\".");
-		}
+		m_paletteClassName = paletteClassName;
+		m_palettePanelClassName = palettePanelClassName;
 		
-		palettePlugin.m_paletteClass = null;
-		try { palettePlugin.m_paletteClass = PaletteEditor.classLoader.loadClass(palettePlugin.m_paletteClassName); }
-		catch(ClassNotFoundException e) { throw new PalettePluginLoadException("Class " + palettePlugin.m_paletteClassName + " is missing or not loaded."); }
-		if(!(Palette.class.isAssignableFrom(palettePlugin.m_paletteClass))) {
-			throw new PalettePluginLoadException("Class " + palettePlugin.m_paletteClassName + " does not extend Palette class.");
-		}
-		
-		return palettePlugin;
-	}
-	
-	public static int numberOfConfigFileTypes() {
-		return CONFIG_FILE_TYPES.length;
-	}
-	
-	public static String getConfigFileType(int index) {
-		if(index < 0 || index >= CONFIG_FILE_TYPES.length) { return null; }
-		return CONFIG_FILE_TYPES[index];
-	}
-	
-	public static String getConfigFileTypesAsString() {
-		String listOfConfigFileTypes = "";
-		
-		for(int i=0;i<CONFIG_FILE_TYPES.length;i++) {
-			listOfConfigFileTypes += CONFIG_FILE_TYPES[i];
+		m_paletteClass = null;
+		try { m_paletteClass = ExtendedClassLoader.instance.loadClass(m_paletteClassName); }
+		catch(ClassNotFoundException e) {
+			try { in.close(); } catch(IOException e2) { }
 			
-			if(i < CONFIG_FILE_TYPES.length - 1) {
-				listOfConfigFileTypes += ", ";
-			}
+			throw new PalettePluginLoadException("Class " + m_paletteClassName + " is missing or not loaded.");
+		}
+		if(!(Palette.class.isAssignableFrom(m_paletteClass))) {
+			try { in.close(); } catch(IOException e) { }
+			
+			throw new PalettePluginLoadException("Class " + m_paletteClassName + " does not extend Palette class.");
 		}
 		
-		return listOfConfigFileTypes;
-	}
-	
-	public static boolean hasConfigFileType(String fileType) {
-		if(fileType == null) { return false; }
-		String type = fileType.trim();
-		if(type.length() == 0) { return false; }
-		
-		for(int i=0;i<CONFIG_FILE_TYPES.length;i++) {
-			if(CONFIG_FILE_TYPES[i].equalsIgnoreCase(type)) {
-				return true;
-			}
+		m_palettePanelClass = null;
+		try { m_palettePanelClass = ExtendedClassLoader.instance.loadClass(m_palettePanelClassName); }
+		catch(ClassNotFoundException e) {
+			try { in.close(); } catch(IOException e2) { }
+			
+			throw new PalettePluginLoadException("Class " + m_palettePanelClassName + " is missing or not loaded.");
 		}
-		return false;
-	}
-	
-	public static int indexOfConfigFileType(String fileType) {
-		if(fileType == null) { return -1; }
-		String type = fileType.trim();
-		if(type.length() == 0) { return -1; }
-		
-		for(int i=0;i<CONFIG_FILE_TYPES.length;i++) {
-			if(CONFIG_FILE_TYPES[i].equalsIgnoreCase(type)) {
-				return i;
-			}
+		if(!(PalettePanel.class.isAssignableFrom(m_palettePanelClass))) {
+			try { in.close(); } catch(IOException e) { }
+			
+			throw new PalettePluginLoadException("Class " + m_palettePanelClassName + " does not extend PalettePanel class.");
 		}
-		return -1;
+		
+		return true;
 	}
 	
 	public boolean equals(Object o) {
@@ -824,10 +572,6 @@ public class PalettePlugin {
 		if(m_name == null || p.m_name == null) { return false; }
 		
 		return m_name.equalsIgnoreCase(p.m_name);
-	}
-	
-	public String toString() {
-		return m_name;
 	}
 	
 }

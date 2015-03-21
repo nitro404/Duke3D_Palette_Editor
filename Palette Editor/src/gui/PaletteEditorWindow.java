@@ -423,8 +423,8 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 	}
 	
 	public boolean promptNewPalette() {
-		Vector<PalettePlugin> loadedInstantiablePlugins = PaletteEditor.pluginManager.getLoadedInstantiablePlugins();
-		if(loadedInstantiablePlugins.size() == 0) {
+		Vector<PalettePlugin> loadedPalettePlugins = PaletteEditor.pluginManager.getLoadedPlugins(PalettePlugin.class);
+		if(loadedPalettePlugins.size() == 0) {
 			String message = "No palette plugins found that support instantiation. Perhaps you forgot to load all plugins?";
 			
 			SystemConsole.instance.writeLine(message);
@@ -435,7 +435,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		}
 		
 		int pluginIndex = -1;
-		Object choices[] = loadedInstantiablePlugins.toArray();
+		Object choices[] = loadedPalettePlugins.toArray();
 		Object value = JOptionPane.showInputDialog(m_frame, "Choose a palette type to create:", "Choose New Palette Type", JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]);
 		if(value == null) { return false; }
 		for(int i=0;i<choices.length;i++) {
@@ -444,14 +444,14 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 				break;
 			}
 		}
-		if(pluginIndex < 0 || pluginIndex >= loadedInstantiablePlugins.size()) { return false; }
+		if(pluginIndex < 0 || pluginIndex >= loadedPalettePlugins.size()) { return false; }
 		
 		Palette newPalette = null;
 		try {
-			newPalette = loadedInstantiablePlugins.elementAt(pluginIndex).getPaletteInstance(null);
+			newPalette = loadedPalettePlugins.elementAt(pluginIndex).getNewPaletteInstance(null);
 		}
 		catch(PaletteInstantiationException e) {
-			String message = "Failed to create instance of \"" + loadedInstantiablePlugins.elementAt(pluginIndex).getName() + "\"!";
+			String message = "Failed to create instance of \"" + loadedPalettePlugins.elementAt(pluginIndex).getName() + "\"!";
 			
 			SystemConsole.instance.writeLine(message);
 			
@@ -473,14 +473,42 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			return false;
 		}
 		
-		SystemConsole.instance.writeLine(loadedInstantiablePlugins.elementAt(pluginIndex).getName() + " palette created successfully!");
+		SystemConsole.instance.writeLine(loadedPalettePlugins.elementAt(pluginIndex).getName() + " palette created successfully!");
 		
-		PalettePanel newPalettePanel = new PalettePanel(newPalette);
+		PalettePanel newPalettePanel = null;
+		try { newPalettePanel = loadedPalettePlugins.elementAt(pluginIndex).getNewPalettePanelInstance(newPalette); }
+		catch(PalettePanelInstantiationException e) {
+			SystemConsole.instance.writeLine(e.getMessage());
+			
+			JOptionPane.showMessageDialog(m_frame, e.getMessage(), "Palette Panel Instantiation Failed", JOptionPane.ERROR_MESSAGE);
+			
+			return false;
+		}
+		if(newPalettePanel == null) {
+			String message = "Failed to instantiate palette panel for \"" + loadedPalettePlugins.elementAt(pluginIndex).getName() + " plugin.";
+			
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "Plugin Instantiation Failed", JOptionPane.ERROR_MESSAGE);
+			
+			return false;
+		}
+		
+		if(!newPalettePanel.init()) {
+			String message = "Failed to initialize palette panel for \"" + loadedPalettePlugins.elementAt(pluginIndex).getName() + "\" plugin.";
+			
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "Palette Loading Failed", JOptionPane.ERROR_MESSAGE);
+			
+			return false;
+		}
 		
 		newPalettePanel.addPaletteActionListener(this);
 		
 		addPalette(newPalettePanel);
 		
+		newPalettePanel.setPaletteNumber(PaletteEditor.getPaletteNumber());
 		newPalettePanel.setChanged(true);
 		
 		return true;
@@ -553,7 +581,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		String extension = Utilities.getFileExtension(file.getName());
 		
-		PalettePlugin plugin = PaletteEditor.pluginManager.getPluginForFileType(extension);
+		PalettePlugin plugin = PaletteEditor.pluginManager.getPalettePluginForFileFormat(extension);
 		if(plugin == null) {
 			String message = "No plugin found to load " + extension + " file type. Perhaps you forgot to load all plugins?";
 			
@@ -565,7 +593,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		}
 		
 		Palette palette = null;
-		try { palette = plugin.getPaletteInstance(file); }
+		try { palette = plugin.getNewPaletteInstance(file); }
 		catch(PaletteInstantiationException e) {
 			SystemConsole.instance.writeLine(e.getMessage());
 			
@@ -574,7 +602,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			return false;
 		}
 		if(palette == null) {
-			String message = "Failed to instantiate \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\" plugin when attempting to read palette file: \"" + file.getName() + "\".";
+			String message = "Failed to instantiate \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileFormatsAsString() + ")\" plugin when attempting to read palette file: \"" + file.getName() + "\".";
 			
 			SystemConsole.instance.writeLine(message);
 			
@@ -585,7 +613,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		try {
 			if(!palette.load()) {
-				String message = "Failed to load palette: \"" + file.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\".";
+				String message = "Failed to load palette: \"" + file.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileFormatsAsString() + ")\".";
 				
 				SystemConsole.instance.writeLine(message);
 				
@@ -595,7 +623,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			}
 		}
 		catch(HeadlessException e) {
-			String message = "Exception thrown while loading palette: \"" + file.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + "): " + e.getMessage();
+			String message = "Exception thrown while loading palette: \"" + file.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileFormatsAsString() + "): " + e.getMessage();
 			
 			SystemConsole.instance.writeLine(message);
 			
@@ -613,8 +641,36 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		SystemConsole.instance.writeLine("Palette file \"" + file.getName() +  "\" loaded successfully!");
 		
-		PalettePanel palettePanel = new PalettePanel(palette);
+		PalettePanel palettePanel = null;
+		try { palettePanel = plugin.getNewPalettePanelInstance(palette); }
+		catch(PalettePanelInstantiationException e) {
+			SystemConsole.instance.writeLine(e.getMessage());
+			
+			JOptionPane.showMessageDialog(m_frame, e.getMessage(), "Palette Panel Instantiation Failed", JOptionPane.ERROR_MESSAGE);
+			
+			return false;
+		}
+		if(palettePanel == null) {
+			String message = "Failed to instantiate palette panel for \"" + plugin.getName() + " plugin.";
+			
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "Plugin Instantiation Failed", JOptionPane.ERROR_MESSAGE);
+			
+			return false;
+		}
 		
+		if(!palettePanel.init()) {
+			String message = "Failed to initialize palette panel for \"" + plugin.getName() + "\" plugin.";
+			
+			SystemConsole.instance.writeLine(message);
+			
+			JOptionPane.showMessageDialog(m_frame, message, "Palette Loading Failed", JOptionPane.ERROR_MESSAGE);
+			
+			return false;
+		}
+		
+		palettePanel.setPaletteNumber(PaletteEditor.getPaletteNumber());
 		palettePanel.addPaletteActionListener(this);
 		
 		addPalette(palettePanel);
@@ -749,7 +805,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		File selectedFile = fileChooser.getSelectedFile();
 		String extension = Utilities.getFileExtension(selectedFile.getName());
 		
-		PalettePlugin plugin = PaletteEditor.pluginManager.getPluginForFileType(extension);
+		PalettePlugin plugin = PaletteEditor.pluginManager.getPalettePluginForFileFormat(extension);
 		if(plugin == null) {
 			String message = "No plugin found to import " + extension + " file type. Perhaps you forgot to load all plugins?";
 			
@@ -761,7 +817,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		}
 		
 		Palette importedPalette = null;
-		try { importedPalette = plugin.getPaletteInstance(selectedFile); }
+		try { importedPalette = plugin.getNewPaletteInstance(selectedFile); }
 		catch(PaletteInstantiationException e) {
 			SystemConsole.instance.writeLine(e.getMessage());
 			
@@ -770,7 +826,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			return false;
 		}
 		if(importedPalette == null) {
-			String message = "Failed to instantiate \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\" plugin when attempting to import palette file: \"" + selectedFile.getName() + "\".";
+			String message = "Failed to instantiate \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileFormatsAsString() + ")\" plugin when attempting to import palette file: \"" + selectedFile.getName() + "\".";
 			
 			SystemConsole.instance.writeLine(message);
 			
@@ -781,7 +837,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		try {
 			if(!importedPalette.load()) {
-				String message = "Failed to import palette: \"" + selectedFile.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + ")\".";
+				String message = "Failed to import palette: \"" + selectedFile.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileFormatsAsString() + ")\".";
 				
 				SystemConsole.instance.writeLine(message);
 				
@@ -791,7 +847,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			}
 		}
 		catch(HeadlessException e) {
-			String message = "Exception thrown while importing palette : \"" + selectedFile.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileTypesAsString() + "): " + e.getMessage();
+			String message = "Exception thrown while importing palette : \"" + selectedFile.getName() + "\" using plugin: \"" + plugin.getName() + " (" + plugin.getSupportedPaletteFileFormatsAsString() + "): " + e.getMessage();
 			
 			SystemConsole.instance.writeLine(message);
 			
@@ -916,7 +972,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			}
 		}
 		
-		Vector<PalettePlugin> loadedInstantiablePlugins = PaletteEditor.pluginManager.getLoadedInstantiablePluginsExcluding(palette.getExtension());
+		Vector<PalettePlugin> loadedInstantiablePlugins = PaletteEditor.pluginManager.getLoadedPalettePluginsExcludingFileFormat(palette.getExtension());
 		if(loadedInstantiablePlugins.size() == 0) {
 			String message = "No palette plugins found that support instantiation / exporting. Perhaps you forgot to load all plugins?";
 			
@@ -947,8 +1003,8 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 				if(pluginIndex < 0 || pluginIndex >= loadedInstantiablePlugins.size()) { return false; }
 				
 				fileTypeIndex = 0;
-				if(loadedInstantiablePlugins.elementAt(pluginIndex).numberOfSupportedPaletteFileTypes() > 1) {
-					choices = loadedInstantiablePlugins.elementAt(pluginIndex).getSupportedPaletteFileTypes().toArray();
+				if(loadedInstantiablePlugins.elementAt(pluginIndex).numberOfSupportedPaletteFileFormats() > 1) {
+					choices = loadedInstantiablePlugins.elementAt(pluginIndex).getSupportedPaletteFileFormats().toArray();
 					value = JOptionPane.showInputDialog(m_frame, "Choose a palette file type to export to:", "Choose File Type", JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]);
 					if(value == null) { return false; }
 					for(int i=0;i<choices.length;i++) {
@@ -971,7 +1027,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			fileChooser.setDialogTitle("Export Palette File");
 			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			fileChooser.setMultiSelectionEnabled(false);
-			String extension = loadedInstantiablePlugins.elementAt(pluginIndex).getSupportedPaletteFileType(fileTypeIndex);
+			String extension = loadedInstantiablePlugins.elementAt(pluginIndex).getSupportedPaletteFileFormat(fileTypeIndex);
 			if(palette.getFile() != null) {
 				String fileName = palette.getFile().getName();
 				fileChooser.setSelectedFile(new File(Utilities.getFileNameNoExtension(fileName) + (palette.numberOfPalettes() > 1 ? "_" + (currentPaletteIndex + 1) : (Utilities.compareCasePercentage(fileName) < 0 ? "_copy" : "_COPY"))  + "." + (Utilities.compareCasePercentage(fileName) < 0 ? extension.toLowerCase() : extension.toUpperCase())));
@@ -997,10 +1053,10 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			
 			Palette newPalette = null;
 			try {
-				newPalette = loadedInstantiablePlugins.elementAt(pluginIndex).getPaletteInstance(fileChooser.getSelectedFile());
+				newPalette = loadedInstantiablePlugins.elementAt(pluginIndex).getNewPaletteInstance(fileChooser.getSelectedFile());
 			}
 			catch(PaletteInstantiationException e) {
-				String message = "Failed to create instance of export file: \"" + loadedInstantiablePlugins.elementAt(pluginIndex).getName() + " (" + loadedInstantiablePlugins.elementAt(pluginIndex).getSupportedPaletteFileTypesAsString() + ")!";
+				String message = "Failed to create instance of export file: \"" + loadedInstantiablePlugins.elementAt(pluginIndex).getName() + " (" + loadedInstantiablePlugins.elementAt(pluginIndex).getSupportedPaletteFileFormatsAsString() + ")!";
 				
 				SystemConsole.instance.writeLine(message);
 				
