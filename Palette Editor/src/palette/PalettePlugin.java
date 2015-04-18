@@ -194,7 +194,7 @@ public class PalettePlugin extends Plugin {
 	}
 	
 	public PalettePanel getNewPalettePanelInstance(Palette palette) throws PalettePanelInstantiationException {
-		if(m_palettePanelClass == null) { return null; }
+		if(m_palettePanelClass == null || palette == null) { return null; }
 		
 		Constructor<?> constructor = null;
 		try { constructor = m_palettePanelClass.getDeclaredConstructor(Palette.class); }
