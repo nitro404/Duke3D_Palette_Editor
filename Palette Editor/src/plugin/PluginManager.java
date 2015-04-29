@@ -431,18 +431,7 @@ public class PluginManager {
 			throw new PluginLoadException("Plugin definition file \"" + file.getName() + "\" is missing or invalid.");
 		}
 		
-		String directoryName;
-		if(file.getPath().matches(".*[\\\\/].*")) {
-			directoryName = file.getPath().replaceAll("[\\\\/][^\\\\/]*$", "").replaceAll("^.*[\\\\/]", "");
-		}
-		else {
-			directoryName = "/";
-		}
-		
-		String formattedDirectoryName = directoryName.trim();
-		if(formattedDirectoryName.length() == 0) {
-			throw new PluginLoadException("Plugin must have a non-empty directory name.");
-		}
+		String directoryPath = Utilities.getRelativizedPath(Utilities.getFilePath(file), "Plugins");
 		
 		String fileExtension = Utilities.getFileExtension(file.getName());
 		if(fileExtension == null) {
@@ -451,10 +440,10 @@ public class PluginManager {
 		
 		Plugin newPlugin = null;
 		if(fileExtension.equalsIgnoreCase("cfg")) {
-			newPlugin = loadPluginFromCFGFile(file, formattedDirectoryName);
+			newPlugin = loadPluginFromCFGFile(file, directoryPath);
 		}
 		else if(fileExtension.equalsIgnoreCase("xml")) {
-			newPlugin = loadPluginFromXMLFile(file, formattedDirectoryName);
+			newPlugin = loadPluginFromXMLFile(file, directoryPath);
 		}
 		else {
 			throw new PluginLoadException("Unsupported plugin configuration file type: \"" + fileExtension + "\".");
@@ -833,9 +822,8 @@ public class PluginManager {
 				}
 			}
 		});
-		pluginLoaderThread.start();
 		
-		m_progressDialog.display("Loading", "Loading plugin...", 0, 1, task);
+		m_progressDialog.display("Loading", "Loading plugin...", 0, 1, task, pluginLoaderThread);
 		
 		if(m_progressDialog.userCancelled() || !task.isCompleted()) {
 			task.cancel();
@@ -885,9 +873,8 @@ public class PluginManager {
 					loadPlugins(new File(SettingsManager.instance.pluginDirectoryName), task);
 				}
 			});
-			pluginLoaderThread.start();
 			
-			m_progressDialog.display("Loading", "Loading plugins...", 0, numberOfUnloadedPlugins, task);
+			m_progressDialog.display("Loading", "Loading plugins...", 0, numberOfUnloadedPlugins, task, pluginLoaderThread);
 			
 			if(m_progressDialog.userCancelled() || !task.isCompleted()) {
 				task.cancel();

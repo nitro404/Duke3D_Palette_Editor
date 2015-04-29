@@ -22,8 +22,8 @@ public class PalettePlugin extends Plugin {
 	
 	public static final String PLUGIN_TYPE = "Palette";
 	
-	public PalettePlugin(String pluginName, String pluginVersion, String jarFileName, String configFileName, String directoryName) {
-		super(pluginName, pluginVersion, jarFileName, configFileName, directoryName);
+	public PalettePlugin(String pluginName, String pluginVersion, String jarFileName, String configFileName, String directoryPath) {
+		super(pluginName, pluginVersion, jarFileName, configFileName, directoryPath);
 		m_supportedPaletteFileFormats = new Vector<String>();
 		m_paletteClassName = null;
 		m_palettePanelClassName = null;
