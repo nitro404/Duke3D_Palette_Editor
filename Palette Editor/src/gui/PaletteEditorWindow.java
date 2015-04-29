@@ -581,8 +581,8 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		
 		String extension = Utilities.getFileExtension(file.getName());
 		
-		PalettePlugin plugin = PaletteEditor.pluginManager.getPalettePluginForFileFormat(extension);
-		if(plugin == null) {
+		Vector<PalettePlugin> plugins = PaletteEditor.pluginManager.getPalettePluginsForFileFormat(extension);
+		if(plugins == null || plugins.size() == 0) {
 			String message = "No plugin found to load " + extension + " file type. Perhaps you forgot to load all plugins?";
 			
 			SystemConsole.instance.writeLine(message);
@@ -590,6 +590,23 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			JOptionPane.showMessageDialog(m_frame, message, "No Plugin Found", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
+		}
+		
+		PalettePlugin plugin = plugins.elementAt(0);
+		if(plugins.size() > 1) {
+			int pluginIndex = -1;
+			Object choices[] = plugins.toArray();
+			Object value = JOptionPane.showInputDialog(m_frame, "Found multiple plugins supporting this file format.\nChoose a plugin to open this file with:", "Choose Plugin", JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]);
+			if(value == null) { return false; }
+			for(int i=0;i<choices.length;i++) {
+				if(choices[i] == value) {
+					pluginIndex = i;
+					break;
+				}
+			}
+			if(pluginIndex < 0 || pluginIndex >= plugins.size()) { return false; }
+			
+			plugin = plugins.elementAt(pluginIndex);
 		}
 		
 		Palette palette = null;
@@ -805,8 +822,8 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		File selectedFile = fileChooser.getSelectedFile();
 		String extension = Utilities.getFileExtension(selectedFile.getName());
 		
-		PalettePlugin plugin = PaletteEditor.pluginManager.getPalettePluginForFileFormat(extension);
-		if(plugin == null) {
+		Vector<PalettePlugin> plugins = PaletteEditor.pluginManager.getPalettePluginsForFileFormat(extension);
+		if(plugins == null || plugins.size() == 0) {
 			String message = "No plugin found to import " + extension + " file type. Perhaps you forgot to load all plugins?";
 			
 			SystemConsole.instance.writeLine(message);
@@ -814,6 +831,23 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			JOptionPane.showMessageDialog(m_frame, message, "No Plugin Found", JOptionPane.ERROR_MESSAGE);
 			
 			return false;
+		}
+
+		PalettePlugin plugin = plugins.elementAt(0);
+		if(plugins.size() > 1) {
+			int pluginIndex = -1;
+			Object choices[] = plugins.toArray();
+			Object value = JOptionPane.showInputDialog(m_frame, "Found multiple plugins supporting this file format.\nChoose a plugin to import this file with:", "Choose Plugin", JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]);
+			if(value == null) { return false; }
+			for(int i=0;i<choices.length;i++) {
+				if(choices[i] == value) {
+					pluginIndex = i;
+					break;
+				}
+			}
+			if(pluginIndex < 0 || pluginIndex >= plugins.size()) { return false; }
+			
+			plugin = plugins.elementAt(pluginIndex);
 		}
 		
 		Palette importedPalette = null;

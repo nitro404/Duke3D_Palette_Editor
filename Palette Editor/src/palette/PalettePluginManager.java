@@ -19,12 +19,13 @@ public class PalettePluginManager extends PluginManager {
 		instance = this;
 	}
 	
-	public PalettePlugin getPalettePluginForFileFormat(String fileFormat) {
+	public Vector<PalettePlugin> getPalettePluginsForFileFormat(String fileFormat) {
 		if(fileFormat == null) { return null; }
 		String formattedFileFormat = fileFormat.trim();
 		if(formattedFileFormat.length() == 0) { return null; }
 		
 		PalettePlugin palettePlugin = null;
+		Vector<PalettePlugin> palettePlugins = new Vector<PalettePlugin>();
 		for(int i=0;i<m_plugins.size();i++) {
 			if(!(m_plugins.elementAt(i) instanceof PalettePlugin)) { continue; }
 			
@@ -32,11 +33,11 @@ public class PalettePluginManager extends PluginManager {
 			
 			for(int j=0;j<palettePlugin.numberOfSupportedPaletteFileFormats();j++) {
 				if(palettePlugin.getSupportedPaletteFileFormat(j).equalsIgnoreCase(formattedFileFormat)) {
-					return palettePlugin;
+					palettePlugins.add(palettePlugin);
 				}
 			}
 		}
-		return null;
+		return palettePlugins;
 	}
 	
 	public boolean hasPalettePluginForFileFormat(String fileFormat) {
@@ -59,7 +60,29 @@ public class PalettePluginManager extends PluginManager {
 		return false;
 	}
 	
-	public int indexOfPalettePluginForFileFormat(String fileFormat) {
+	public int numberOfPalettePluginsForFileFormat(String fileFormat) {
+		if(fileFormat == null) { return 0; }
+		String formattedFileFormat = fileFormat.trim();
+		if(formattedFileFormat.length() == 0) { return 0; }
+		
+		int numberOfPalettePlugins = 0;
+		
+		PalettePlugin palettePlugin = null;
+		for(int i=0;i<m_plugins.size();i++) {
+			if(!(m_plugins.elementAt(i) instanceof PalettePlugin)) { continue; }
+			
+			palettePlugin = (PalettePlugin) m_plugins.elementAt(i);
+			
+			for(int j=0;j<palettePlugin.numberOfSupportedPaletteFileFormats();j++) {
+				if(palettePlugin.getSupportedPaletteFileFormat(j).equalsIgnoreCase(formattedFileFormat)) {
+					numberOfPalettePlugins++;
+				}
+			}
+		}
+		return numberOfPalettePlugins;
+	}
+	
+	public int indexOfFirstPalettePluginForFileFormat(String fileFormat) {
 		if(fileFormat == null) { return -1; }
 		String formattedFileFormat = fileFormat.trim();
 		if(formattedFileFormat.length() == 0) { return -1; }
