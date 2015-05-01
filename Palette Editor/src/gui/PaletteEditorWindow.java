@@ -298,7 +298,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		m_consoleFont = new Font("Verdana", Font.PLAIN, 14);
 		m_consoleText.setFont(m_consoleFont);
 		m_consoleText.setEditable(false);
-		m_consoleText.setTransferHandler(m_transferHandler);
+//		m_consoleText.setTransferHandler(m_transferHandler);
 		m_consoleScrollPane = new JScrollPane(m_consoleText);
 		m_mainTabbedPane.add(m_consoleScrollPane);
 		
