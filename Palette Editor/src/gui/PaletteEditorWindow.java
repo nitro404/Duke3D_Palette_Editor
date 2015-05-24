@@ -1006,7 +1006,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 			}
 		}
 		
-		Vector<PalettePlugin> loadedInstantiablePlugins = PaletteEditor.pluginManager.getLoadedPalettePluginsExcludingFileFormat(palette.getExtension());
+		Vector<PalettePlugin> loadedInstantiablePlugins = PaletteEditor.pluginManager.getPalettePluginsExcludingFileFormat(palette.getExtension());
 		if(loadedInstantiablePlugins.size() == 0) {
 			String message = "No palette plugins found that support instantiation / exporting. Perhaps you forgot to load all plugins?";
 			

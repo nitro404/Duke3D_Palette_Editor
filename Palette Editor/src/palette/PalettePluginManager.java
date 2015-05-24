@@ -102,56 +102,56 @@ public class PalettePluginManager extends PluginManager {
 		return -1;
 	}
 	
-	public String getLoadedPalettePluginsAsStringExcludingFileFormat(String fileFormat) {
+	public String getPalettePluginsAsStringExcludingFileFormat(String fileFormat) {
 		if(fileFormat == null) { return null; }
 		String formattedFileFormat = fileFormat.trim();
 		if(formattedFileFormat.length() == 0) { return null; }
 		
 		Plugin plugin = null;
 		PalettePlugin palettePlugin = null;
-		String loadedPalettePluginsList = new String();
+		String palettePluginsList = new String();
 		
 		for(int i=0;i<m_plugins.size();i++) {
 			plugin = m_plugins.elementAt(i);
 			
-			if(plugin.isLoaded() && plugin instanceof PalettePlugin) {
+			if(plugin instanceof PalettePlugin) {
 				palettePlugin = (PalettePlugin) plugin;
 				
 				if(palettePlugin.hasSupportedPaletteFileFormat(formattedFileFormat)) {
-					if(loadedPalettePluginsList.length() > 0) {
-						loadedPalettePluginsList += ", ";
+					if(palettePluginsList.length() > 0) {
+						palettePluginsList += ", ";
 					}
 					
-					loadedPalettePluginsList += palettePlugin.getName();
+					palettePluginsList += palettePlugin.getName();
 				}
 			}
 		}
 		
-		return loadedPalettePluginsList;
+		return palettePluginsList;
 	}
 	
-	public Vector<PalettePlugin> getLoadedPalettePluginsExcludingFileFormat(String fileFormat) {
+	public Vector<PalettePlugin> getPalettePluginsExcludingFileFormat(String fileFormat) {
 		if(fileFormat == null) { return null; }
 		String formattedFileFormat = fileFormat.trim();
 		if(formattedFileFormat.length() == 0) { return null; }
 		
 		Plugin plugin = null;
 		PalettePlugin palettePlugin = null;
-		Vector<PalettePlugin> loadedPalettePlugins = new Vector<PalettePlugin>();
+		Vector<PalettePlugin> palettePlugins = new Vector<PalettePlugin>();
 		
 		for(int i=0;i<m_plugins.size();i++) {
 			plugin = m_plugins.elementAt(i);
 			
-			if(plugin.isLoaded() && plugin instanceof PalettePlugin) {
+			if(plugin instanceof PalettePlugin) {
 				palettePlugin = (PalettePlugin) plugin;
 				
 				if(palettePlugin.hasSupportedPaletteFileFormat(formattedFileFormat)) {
-					loadedPalettePlugins.add(palettePlugin);
+					palettePlugins.add(palettePlugin);
 				}
 			}
 		}
 		
-		return loadedPalettePlugins;
+		return palettePlugins;
 	}
 	
 }
