@@ -423,7 +423,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 	}
 	
 	public boolean promptNewPalette() {
-		Vector<PalettePlugin> loadedPalettePlugins = PaletteEditor.pluginManager.getLoadedPlugins(PalettePlugin.class);
+		Vector<PalettePlugin> loadedPalettePlugins = PaletteEditor.pluginManager.getPlugins(PalettePlugin.class);
 		if(loadedPalettePlugins.size() == 0) {
 			String message = "No palette plugins found that support instantiation. Perhaps you forgot to load all plugins?";
 			
@@ -515,7 +515,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 	}
 	
 	public void promptLoadPalettes() {
-		if(PaletteEditor.pluginManager.numberOfLoadedPlugins() == 0) {
+		if(PaletteEditor.pluginManager.numberOfPlugins() == 0) {
 			String message = "No palette plugins loaded. You must have at least one palette plugin loaded to open a palette file.";
 			
 			SystemConsole.instance.writeLine(message);
@@ -1528,7 +1528,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		}
 		// display a list of loaded plugins
 		else if(e.getSource() == m_pluginsListLoadedMenuItem) {
-			PalettePluginManager.instance.displayLoadedPlugins();
+			PalettePluginManager.instance.displayPlugins();
 		}
 		// prompt for a plugin to load
 		else if(e.getSource() == m_pluginsLoadMenuItem) {
