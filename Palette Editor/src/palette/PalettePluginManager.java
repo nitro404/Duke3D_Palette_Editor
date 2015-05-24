@@ -1,6 +1,11 @@
 package palette;
 
 import java.util.*;
+import java.io.*;
+import javax.swing.*;
+import variable.*;
+import settings.*;
+import console.*;
 import plugin.*;
 
 public class PalettePluginManager extends PluginManager {
@@ -152,6 +157,84 @@ public class PalettePluginManager extends PluginManager {
 		}
 		
 		return palettePlugins;
+	}
+	
+	public PalettePlugin getPreferredPalettePluginPrompt(String fileFormat) {
+		if(fileFormat == null) { return null; }
+		
+		Vector<PalettePlugin> plugins = getPalettePluginsForFileFormat(fileFormat);
+		if(plugins == null || plugins.size() == 0) { return null; }
+		
+		PalettePlugin plugin = null;
+		
+		if(hasPreferredPluginForFileFormat(fileFormat, PalettePlugin.class)) {
+			String preferredPluginName = getPreferredPluginForFileFormat(fileFormat, PalettePlugin.class);
+			plugin = getPlugin(preferredPluginName, PalettePlugin.class);
+			
+			// if the preferred plugin is not loaded
+			if(plugin == null) {
+				// get a collection of all unloaded plugins
+				VariableCollection unloadedPlugins = getUnloadedPlugins(new File(SettingsManager.instance.pluginDirectoryName));
+				
+				// get the info for the currently unloaded preferred plugin
+				Variable preferredPluginInfo = unloadedPlugins.getVariable(preferredPluginName);
+				
+				// if the preferred plugin does not exist, run the plugin selection prompt
+				if(preferredPluginInfo == null) {
+					plugin = null;
+				}
+				// otherwise if the preferred plugin is currently unloaded, prompt the user to load it
+				else {
+					int choice = JOptionPane.showConfirmDialog(null, "Preferred plugin is not loaded. Would you like to load it or choose a different plugin?", "Plugin Not Loaded", JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_CANCEL_OPTION);
+					if(choice == JOptionPane.NO_OPTION || choice == JOptionPane.CANCEL_OPTION) { plugin = null; }
+					else if(choice == JOptionPane.YES_OPTION) {
+						if(!loadPlugin(preferredPluginInfo.getID(), preferredPluginInfo.getValue())) {
+							plugin = null;
+							
+							String message = "Failed to load preferred plugin \"" + preferredPluginInfo.getID() + "\"!";
+							
+							SystemConsole.instance.writeLine(message);
+							
+							JOptionPane.showMessageDialog(null, message, "Plugin Loading Failed", JOptionPane.ERROR_MESSAGE);
+						}
+					}
+				}
+			}
+		}
+		
+		boolean preferredPluginSelected = plugin != null;
+		
+		if(plugin == null) {
+			plugin = plugins.elementAt(0);
+		}
+		
+		if(plugins.size() > 1 && !preferredPluginSelected) {
+			int pluginIndex = -1;
+			Object choices[] = plugins.toArray();
+			Object value = JOptionPane.showInputDialog(null, "Found multiple plugins supporting this file format.\nChoose a plugin to process this file with:", "Choose Plugin", JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]);
+			if(value == null) { return null; }
+			for(int i=0;i<choices.length;i++) {
+				if(choices[i] == value) {
+					pluginIndex = i;
+					break;
+				}
+			}
+			if(pluginIndex < 0 || pluginIndex >= plugins.size()) { return null; }
+			
+			plugin = plugins.elementAt(pluginIndex);
+			
+			String currentPreferredPluginName = getPreferredPluginForFileFormat(fileFormat, PalettePlugin.class);
+			if(currentPreferredPluginName == null || !currentPreferredPluginName.equalsIgnoreCase(plugin.getName())) {
+				int choice = JOptionPane.showConfirmDialog(null, "Would you like to set this plugin as your preferred plugin for the " + fileFormat + " file format?", "Set Preferred Plugin", JOptionPane.YES_NO_CANCEL_OPTION);
+				if(choice == JOptionPane.YES_OPTION) {
+					if(!setPreferredPluginForFileFormat(fileFormat, plugin.getName(), PalettePlugin.class)) {
+						SystemConsole.instance.writeLine("Failed to set \"" + plugin.getName() + "\" as preferred plugin for " + fileFormat + " file format.");
+					}
+				}
+			}
+		}
+		
+		return plugin;
 	}
 	
 }
