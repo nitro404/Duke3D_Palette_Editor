@@ -24,6 +24,8 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 	private Font m_consoleFont;
 	private JScrollPane m_consoleScrollPane;
 	
+	private PreferredPalettePluginEditorDialog m_preferredPluginEditorDialog;
+	
 	private JMenuBar m_menuBar;
 	private JMenu m_fileMenu;
 	private JMenuItem m_fileNewMenuItem;
@@ -51,6 +53,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 	private JMenuItem m_settingsReloadSettingsMenuItem;
 	private JMenuItem m_settingsResetSettingsMenuItem;
 	private JMenu m_pluginsMenu;
+	private JMenuItem m_pluginsPreferredEditorMenuItem;
 	private JMenuItem m_pluginsListLoadedMenuItem;
 	private JMenuItem m_pluginsLoadMenuItem;
 	private JMenuItem m_pluginsLoadAllMenuItem;
@@ -135,6 +138,8 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		update();
 		m_frame.setVisible(true);
 		
+		m_preferredPluginEditorDialog = new PreferredPalettePluginEditorDialog(m_frame);
+		
 		m_initialized = true;
 		
 		update();
@@ -190,6 +195,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		m_settingsSupressUpdatesMenuItem.setSelected(SettingsManager.defaultSupressUpdates);
 		
 		m_pluginsMenu = new JMenu("Plugins");
+		m_pluginsPreferredEditorMenuItem = new JMenuItem("Edit Preferred Plugins");
 		m_pluginsListLoadedMenuItem = new JMenuItem("List Loaded Plugins");
 		m_pluginsLoadMenuItem = new JMenuItem("Load Plugin");
 		m_pluginsLoadAllMenuItem = new JMenuItem("Load All Plugins");
@@ -229,6 +235,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		m_settingsSaveSettingsMenuItem.addActionListener(this);
 		m_settingsReloadSettingsMenuItem.addActionListener(this);
 		m_settingsResetSettingsMenuItem.addActionListener(this);
+		m_pluginsPreferredEditorMenuItem.addActionListener(this);
 		m_pluginsListLoadedMenuItem.addActionListener(this);
 		m_pluginsLoadMenuItem.addActionListener(this);
 		m_pluginsLoadAllMenuItem.addActionListener(this);
@@ -266,6 +273,7 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 		m_settingsMenu.add(m_settingsReloadSettingsMenuItem);
 		m_settingsMenu.add(m_settingsResetSettingsMenuItem);
 		
+		m_pluginsMenu.add(m_pluginsPreferredEditorMenuItem);
 		m_pluginsMenu.add(m_pluginsListLoadedMenuItem);
 		m_pluginsMenu.add(m_pluginsLoadMenuItem);
 		m_pluginsMenu.add(m_pluginsLoadAllMenuItem);
@@ -1474,6 +1482,20 @@ public class PaletteEditorWindow implements WindowListener, ComponentListener, C
 				update();
 				
 				SystemConsole.instance.writeLine("All settings reset to default values");
+			}
+		}
+		// display the preferred plugin editor dialog
+		else if(e.getSource() == m_pluginsPreferredEditorMenuItem) {
+			m_preferredPluginEditorDialog.display();
+			
+			if(m_preferredPluginEditorDialog.userSubmitted()) {
+				SettingsManager.instance.save();
+				if(SettingsManager.instance.save()) {
+					SystemConsole.instance.writeLine("Successfully saved settings to file: " + SettingsManager.instance.settingsFileName);
+				}
+				else {
+					SystemConsole.instance.writeLine("Failed to save settings to file: " + SettingsManager.instance.settingsFileName);
+				}
 			}
 		}
 		// display a list of loaded plugins

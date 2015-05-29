@@ -159,6 +159,73 @@ public class PalettePluginManager extends PluginManager {
 		return palettePlugins;
 	}
 	
+	public Vector<String> getSupportedPaletteFileFormats() {
+		Plugin plugin = null;
+		PalettePlugin palettePlugin = null;
+		String fileFormat = null;
+		boolean duplicateFileFormat = false;
+		Vector<String> fileFormats = new Vector<String>();
+		
+		for(int i=0;i<m_plugins.size();i++) {
+			plugin = m_plugins.elementAt(i);
+			
+			if(plugin instanceof PalettePlugin) {
+				palettePlugin = (PalettePlugin) plugin;
+				
+				for(int j=0;j<palettePlugin.numberOfSupportedPaletteFileFormats();j++) {
+					fileFormat = palettePlugin.getSupportedPaletteFileFormat(j).toUpperCase();
+					duplicateFileFormat = false;
+					
+					for(int k=0;k<fileFormats.size();k++) {
+						if(fileFormats.elementAt(k).equalsIgnoreCase(fileFormat)) {
+							duplicateFileFormat = true;
+							break;
+						}
+					}
+					
+					if(duplicateFileFormat) { continue; }
+					
+					fileFormats.add(fileFormat);
+				}
+			}
+		}
+		
+		return fileFormats;
+	}
+	
+	public Vector<String> getSupportedAndPreferredPaletteFileFormats() {
+		Vector<String> fileFormats = new Vector<String>();
+		
+		Vector<String> supportedFileFormats = getSupportedPaletteFileFormats();
+		
+		if(supportedFileFormats != null) {
+			for(int i=0;i<supportedFileFormats.size();i++) {
+				fileFormats.add(supportedFileFormats.elementAt(i));
+			}
+		}
+		
+		Collection<String> preferredFileFormats = getPreferredFileFormats(PalettePlugin.class);
+		
+		boolean duplicateFileFormat = false;
+		if(preferredFileFormats != null) {
+			for(String preferredFileFormat : preferredFileFormats) {
+				duplicateFileFormat = false;
+				
+				for(int j=0;j<fileFormats.size();j++) {
+					if(fileFormats.elementAt(j).equalsIgnoreCase(preferredFileFormat)) {
+						duplicateFileFormat = true;
+					}
+				}
+				
+				if(duplicateFileFormat) { continue; }
+				
+				fileFormats.add(preferredFileFormat);
+			}
+		}
+		
+		return fileFormats;
+	}
+	
 	public PalettePlugin getPreferredPalettePluginPrompt(String fileFormat) {
 		if(fileFormat == null) { return null; }
 		
