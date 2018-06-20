@@ -1,11 +1,15 @@
 Duke Nukem 3D Palette Editor 1.0.1
 
-RELEASE DATE: May 28, 2014
-DEVELOPMENT TIME: 4 Days
-DEVELOPER: Kevin Scroggins (nitro glycerine)
-E-MAIL: nitro404@gmail.com
-WEBSITE: http://www.nitro404.com
-REQUIREMENTS: Java Runtime Environment 1.6
+Release Date: May 28, 2014
+Development Time: 4 Days
+Developer: Kevin Scroggins
+E-Mail: nitro404@gmail.com
+Website: http://www.nitro404.com
+
+==============
+ REQUIREMENTS
+==============
+ + Java Runtime Environment (Version 1.6 or newer)
 
 ==========
  FEATURES
@@ -35,9 +39,10 @@ REQUIREMENTS: Java Runtime Environment 1.6
   
   Check out the sections below for additional information.
   
-  If you happen to have any complaints, suggestions, bugs or comments, please
-  feel free to send them my way! If you wish to contact me using something
-  other than e-mail, alternative contact options are available on my website.
+  If you happen to have any complaints, suggestions, bugs, comments or
+  contributions, please feel free to submit an issue or pull request on the
+  GitHub page: https://github.com/nitro404/duke3d_palette_editor
+ 
   Thank you!
 
 ============
@@ -90,9 +95,9 @@ REQUIREMENTS: Java Runtime Environment 1.6
   and replace them however you like! For more information on how the plugins
   work and how to make your own, check out the compiling and plugins sections.
 
-===========
- COMPILING
-===========
+==========
+ BUILDING
+==========
   If you wish to re-compile the program using the provided source code, you are
   welcome to do so as long as you don't take credit for my hard work and keep
   it for personal use. If you wish to have a feature or plugin added to the
@@ -196,10 +201,10 @@ Palette Class Name: palette.Palette<FILE_TYPE>
   formats is an array of Java "Color" objects.
   
   The file which each palette corresponds to on the hard disk is referred to by
-  the m_file variable.  The palette can only be read from / written to disk if
+  the m_file variable. The palette can only be read from / written to disk if
   this file is set to something.
   
-  the m_loaded variable corresponds to whether or not the palette data has been
+  The m_loaded variable corresponds to whether or not the palette data has been
   loaded into memory (or at least initialized with default data, if a new
   palette was created).
   
