@@ -259,6 +259,8 @@ public class PaletteDAT extends Palette {
 		// attempt to determine the DAT type
 		// if it is unknown, prompt the user to specify the type
 		m_type = DATType.parseFrom(fileName);
+		
+// TODO: model should not display input dialog
 		if(m_type == DATType.Unknown) {
 			String datTypes[] = new String[DATType.Unknown.ordinal()];
 			for(int i=0;i<datTypes.length;i++) {

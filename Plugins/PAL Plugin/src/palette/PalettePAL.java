@@ -76,6 +76,7 @@ public class PalettePAL extends Palette {
 		int r =       (m_data[offset    ] & 0xFF);
 		int g =       (m_data[offset + 1] & 0xFF);
 		int b =       (m_data[offset + 2] & 0xFF);
+// TODO: should this not be + 3?:
 		// int a = 255 - (m_data[offset    ] & 0xFF); // ignore alpha (also inverted)
 		
 		// check that each colour channel is between 0 and 255
@@ -245,6 +246,8 @@ public class PalettePAL extends Palette {
 		if(!riffText.trim().equalsIgnoreCase(HEADER_RIFF_TEXT)) {
 			throw new PaletteReadException("Palette file \"" + m_file.getName() +  "\" is not a valid format, missing " + HEADER_RIFF_TEXT + " specification in header.");
 		}
+
+// TODO: parse 32-bit unsigned integer which contains the size of the document
 		
 		// verify that PAL is specified in the header
 		byte palTextData[] = new byte[] { data[PALETTE_PAL_TEXT_OFFSET], data[PALETTE_PAL_TEXT_OFFSET + 1], data[PALETTE_PAL_TEXT_OFFSET + 2], data[PALETTE_PAL_TEXT_OFFSET + 3] };
@@ -259,8 +262,10 @@ public class PalettePAL extends Palette {
 		if(!dataText.trim().equalsIgnoreCase(HEADER_DATA_TEXT)) {
 			throw new PaletteReadException("Palette file \"" + m_file.getName() +  "\" is not a valid format, missing " + HEADER_DATA_TEXT + " specification in header.");
 		}
-		
-		// verify that the file version
+
+// TODO: i dont think this is version 3.... this changes endianess
+
+		// verify that the data format version is correct
 		byte versionData[] = new byte[] { data[PALETTE_VERSION_OFFSET], data[PALETTE_VERSION_OFFSET + 1] };
 		short version = Serializer.deserializeShort(versionData);
 		if(version != PALETTE_VERSION) {

@@ -68,7 +68,7 @@ public abstract class Palette {
 		String paletteDescriptions = new String();
 		
 		for(int i=0;i<numberOfPalettes();i++) {
-			if(paletteDescriptions.length() < 0) {
+			if(paletteDescriptions.length() != 0) {
 				paletteDescriptions += ", ";
 			}
 			
